@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "comment": "Vercel is for frontend preview only. Full deployment (frontend + ML backend) runs on Railway.",
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "routes": [
