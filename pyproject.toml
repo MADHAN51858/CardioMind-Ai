@@ -2,7 +2,7 @@
 name = "cardiomind"
 version = "1.0.0"
 description = "CardioMind AI — Heart Disease Risk Prediction System"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "fastapi==0.111.0",
     "uvicorn==0.30.1",
