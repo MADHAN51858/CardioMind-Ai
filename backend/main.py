@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 from sklearn.metrics import roc_curve
@@ -53,6 +54,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Static frontend serving ──────────────────────────────────────────────────
+# FastAPI serves the built React app so a single process handles everything.
+_FRONTEND_DIST = os.path.join(_ROOT_DIR, "frontend", "dist")
+
+@app.on_event("startup")
+async def mount_static():
+    """Mount the React build output if it exists (built on Railway/locally)."""
+    if os.path.isdir(_FRONTEND_DIST):
+        app.mount("/assets", StaticFiles(directory=os.path.join(_FRONTEND_DIST, "assets")), name="assets")
+        # Serve favicon & other root-level public files
+        for fname in os.listdir(_FRONTEND_DIST):
+            if os.path.isfile(os.path.join(_FRONTEND_DIST, fname)) and fname != "index.html":
+                pass  # served by catch-all below
+        print(f"[STARTUP] Serving frontend from {_FRONTEND_DIST}")
+    else:
+        print(f"[STARTUP] No frontend build found at {_FRONTEND_DIST} — API-only mode")
 
 # Global variables to store loaded models and configs
 models_cache = {}
@@ -524,3 +542,22 @@ def get_hospital_routes(from_lat: float, from_lng: float, to_lat: float, to_lng:
 def get_hospital_doctors(req: HospitalDoctorRequest):
     """Scrape and extract heart-related doctors with education and specialization."""
     return scrape_hospital_doctors(req.hospital_name, req.website_url)
+
+
+# ── SPA catch-all ─────────────────────────────────────────────────────────────
+# Must be the LAST route. Returns index.html for any path not matched above
+# so React Router handles client-side navigation.
+
+@app.get("/{full_path:path}", include_in_schema=False)
+async def serve_spa(full_path: str):
+    """Serve the React SPA for all non-API routes."""
+    if not os.path.isdir(_FRONTEND_DIST):
+        return {"error": "Frontend not built. Run: cd frontend && npm run build"}
+
+    # Try serving an exact file first (favicon.svg, etc.)
+    file_path = os.path.join(_FRONTEND_DIST, full_path)
+    if full_path and os.path.isfile(file_path):
+        return FileResponse(file_path)
+
+    # Fall back to index.html for all SPA routes
+    return FileResponse(os.path.join(_FRONTEND_DIST, "index.html"))
