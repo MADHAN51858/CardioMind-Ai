@@ -9,6 +9,8 @@ env/
 .env.*.local
 backend/.env
 frontend/.env
+
+# Python cache
 __pycache__/
 *.py[cod]
 *$py.class
@@ -16,6 +18,24 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Runtime SQLite databases (generated at startup)
+backend/*.db
+*.db
+
+# Raw training data — large, not needed to serve the app
+data/external/
+data/raw/
+
+# Generated EDA / training plots — not needed at runtime
+reports/
+ml/models/artifacts/plots/
+
+# Python-Vercel files (backend runs on Railway, not Vercel)
+api/
+pyproject.toml
+uv.lock
+.python-version
 
 # Node & Frontend
 node_modules/
