@@ -1,0 +1,27 @@
+{
+  "name": "cardiomind",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CardioMind — Heart Disease AI Risk Prediction & Decision Support System",
+  "main": "start.js",
+  "scripts": {
+    "start": "node start.js",
+    "dev": "node start.js",
+    "backend": "node start.js --backend-only",
+    "frontend": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "lint": "npm --prefix frontend run lint",
+    "test": "PYTHONPATH=. ./.venv/bin/pytest 2>/dev/null || PYTHONPATH=. pytest"
+  },
+  "keywords": [
+    "cardiovascular",
+    "machine-learning",
+    "fastapi",
+    "react",
+    "vite",
+    "explainable-ai",
+    "shap"
+  ],
+  "author": "CardioMind Team",
+  "license": "MIT"
+}

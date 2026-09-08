@@ -1,0 +1,555 @@
+{
+    "models": {
+        "logistic_regression": {
+            "raw": {
+                "accuracy": 0.8524590163934426,
+                "precision": 0.8518518518518519,
+                "recall": 0.8214285714285714,
+                "f1_score": 0.8363636363636364,
+                "sensitivity": 0.8214285714285714,
+                "specificity": 0.8787878787878788,
+                "roc_auc": 0.9166666666666666,
+                "pr_auc": 0.8980452496898378,
+                "brier_score": 0.11758051156459985,
+                "confusion_matrix": {
+                    "tn": 29,
+                    "fp": 4,
+                    "fn": 5,
+                    "tp": 23
+                }
+            },
+            "calibrated": {
+                "accuracy": 0.8524590163934426,
+                "precision": 0.8518518518518519,
+                "recall": 0.8214285714285714,
+                "f1_score": 0.8363636363636364,
+                "sensitivity": 0.8214285714285714,
+                "specificity": 0.8787878787878788,
+                "roc_auc": 0.9177489177489178,
+                "pr_auc": 0.9055240031714983,
+                "brier_score": 0.1239230591464514,
+                "confusion_matrix": {
+                    "tn": 29,
+                    "fp": 4,
+                    "fn": 5,
+                    "tp": 23
+                }
+            },
+            "subgroups": {
+                "sex_female": {
+                    "accuracy": 0.95,
+                    "precision": 1.0,
+                    "recall": 0.8571428571428571,
+                    "f1_score": 0.923076923076923,
+                    "sensitivity": 0.8571428571428571,
+                    "specificity": 1.0,
+                    "roc_auc": 0.978021978021978,
+                    "pr_auc": 0.9662698412698412,
+                    "brier_score": 0.08512752926326364,
+                    "confusion_matrix": {
+                        "tn": 13,
+                        "fp": 0,
+                        "fn": 1,
+                        "tp": 6
+                    },
+                    "sample_size": 20,
+                    "warning": "Sample size too small for statistical significance (<30)"
+                },
+                "sex_male": {
+                    "accuracy": 0.8048780487804879,
+                    "precision": 0.8095238095238095,
+                    "recall": 0.8095238095238095,
+                    "f1_score": 0.8095238095238095,
+                    "sensitivity": 0.8095238095238095,
+                    "specificity": 0.8,
+                    "roc_auc": 0.8857142857142857,
+                    "pr_auc": 0.9024206486103494,
+                    "brier_score": 0.14284770786995765,
+                    "confusion_matrix": {
+                        "tn": 16,
+                        "fp": 4,
+                        "fn": 4,
+                        "tp": 17
+                    },
+                    "sample_size": 41,
+                    "warning": null
+                },
+                "age_<50": {
+                    "accuracy": 0.9444444444444444,
+                    "precision": 1.0,
+                    "recall": 0.8,
+                    "f1_score": 0.888888888888889,
+                    "sensitivity": 0.8,
+                    "specificity": 1.0,
+                    "roc_auc": 0.9538461538461538,
+                    "pr_auc": 0.919642857142857,
+                    "brier_score": 0.09129569679137378,
+                    "confusion_matrix": {
+                        "tn": 13,
+                        "fp": 0,
+                        "fn": 1,
+                        "tp": 4
+                    },
+                    "sample_size": 18,
+                    "warning": "Sample size too small for statistical significance (<30)"
+                },
+                "age_50-65": {
+                    "accuracy": 0.8378378378378378,
+                    "precision": 0.8888888888888888,
+                    "recall": 0.8,
+                    "f1_score": 0.8421052631578948,
+                    "sensitivity": 0.8,
+                    "specificity": 0.8823529411764706,
+                    "roc_auc": 0.9352941176470588,
+                    "pr_auc": 0.9518836428709943,
+                    "brier_score": 0.12105575977904853,
+                    "confusion_matrix": {
+                        "tn": 15,
+                        "fp": 2,
+                        "fn": 4,
+                        "tp": 16
+                    },
+                    "sample_size": 37,
+                    "warning": null
+                },
+                "age_>65": {
+                    "accuracy": 0.6666666666666666,
+                    "precision": 0.6,
+                    "recall": 1.0,
+                    "f1_score": 0.7499999999999999,
+                    "sensitivity": 1.0,
+                    "specificity": 0.3333333333333333,
+                    "roc_auc": 0.6666666666666667,
+                    "pr_auc": 0.711111111111111,
+                    "brier_score": 0.23948682564400195,
+                    "confusion_matrix": {
+                        "tn": 1,
+                        "fp": 2,
+                        "fn": 0,
+                        "tp": 3
+                    },
+                    "sample_size": 6,
+                    "warning": "Sample size too small for statistical significance (<30)"
+                }
+            }
+        },
+        "random_forest": {
+            "raw": {
+                "accuracy": 0.8360655737704918,
+                "precision": 0.8214285714285714,
+                "recall": 0.8214285714285714,
+                "f1_score": 0.8214285714285714,
+                "sensitivity": 0.8214285714285714,
+                "specificity": 0.8484848484848485,
+                "roc_auc": 0.9285714285714286,
+                "pr_auc": 0.9269984039936251,
+                "brier_score": 0.127612467599384,
+                "confusion_matrix": {
+                    "tn": 28,
+                    "fp": 5,
+                    "fn": 5,
+                    "tp": 23
+                }
+            },
+            "calibrated": {
+                "accuracy": 0.8360655737704918,
+                "precision": 0.8214285714285714,
+                "recall": 0.8214285714285714,
+                "f1_score": 0.8214285714285714,
+                "sensitivity": 0.8214285714285714,
+                "specificity": 0.8484848484848485,
+                "roc_auc": 0.933982683982684,
+                "pr_auc": 0.9290286148103276,
+                "brier_score": 0.11985987909526602,
+                "confusion_matrix": {
+                    "tn": 28,
+                    "fp": 5,
+                    "fn": 5,
+                    "tp": 23
+                }
+            },
+            "subgroups": {
+                "sex_female": {
+                    "accuracy": 0.9,
+                    "precision": 0.8571428571428571,
+                    "recall": 0.8571428571428571,
+                    "f1_score": 0.8571428571428571,
+                    "sensitivity": 0.8571428571428571,
+                    "specificity": 0.9230769230769231,
+                    "roc_auc": 0.989010989010989,
+                    "pr_auc": 0.9808673469387754,
+                    "brier_score": 0.07783281593446852,
+                    "confusion_matrix": {
+                        "tn": 12,
+                        "fp": 1,
+                        "fn": 1,
+                        "tp": 6
+                    },
+                    "sample_size": 20,
+                    "warning": "Sample size too small for statistical significance (<30)"
+                },
+                "sex_male": {
+                    "accuracy": 0.8048780487804879,
+                    "precision": 0.8095238095238095,
+                    "recall": 0.8095238095238095,
+                    "f1_score": 0.8095238095238095,
+                    "sensitivity": 0.8095238095238095,
+                    "specificity": 0.8,
+                    "roc_auc": 0.9023809523809525,
+                    "pr_auc": 0.9133034825773347,
+                    "brier_score": 0.14036088551516723,
+                    "confusion_matrix": {
+                        "tn": 16,
+                        "fp": 4,
+                        "fn": 4,
+                        "tp": 17
+                    },
+                    "sample_size": 41,
+                    "warning": null
+                },
+                "age_<50": {
+                    "accuracy": 0.8888888888888888,
+                    "precision": 0.8,
+                    "recall": 0.8,
+                    "f1_score": 0.8000000000000002,
+                    "sensitivity": 0.8,
+                    "specificity": 0.9230769230769231,
+                    "roc_auc": 0.9538461538461538,
+                    "pr_auc": 0.919642857142857,
+                    "brier_score": 0.08730588194328029,
+                    "confusion_matrix": {
+                        "tn": 12,
+                        "fp": 1,
+                        "fn": 1,
+                        "tp": 4
+                    },
+                    "sample_size": 18,
+                    "warning": "Sample size too small for statistical significance (<30)"
+                },
+                "age_50-65": {
+                    "accuracy": 0.8378378378378378,
+                    "precision": 0.8888888888888888,
+                    "recall": 0.8,
+                    "f1_score": 0.8421052631578948,
+                    "sensitivity": 0.8,
+                    "specificity": 0.8823529411764706,
+                    "roc_auc": 0.9441176470588235,
+                    "pr_auc": 0.957151593147185,
+                    "brier_score": 0.11695524922528952,
+                    "confusion_matrix": {
+                        "tn": 15,
+                        "fp": 2,
+                        "fn": 4,
+                        "tp": 16
+                    },
+                    "sample_size": 37,
+                    "warning": null
+                },
+                "age_>65": {
+                    "accuracy": 0.6666666666666666,
+                    "precision": 0.6,
+                    "recall": 1.0,
+                    "f1_score": 0.7499999999999999,
+                    "sensitivity": 1.0,
+                    "specificity": 0.3333333333333333,
+                    "roc_auc": 0.7777777777777779,
+                    "pr_auc": 0.7638888888888888,
+                    "brier_score": 0.23543375474941144,
+                    "confusion_matrix": {
+                        "tn": 1,
+                        "fp": 2,
+                        "fn": 0,
+                        "tp": 3
+                    },
+                    "sample_size": 6,
+                    "warning": "Sample size too small for statistical significance (<30)"
+                }
+            }
+        },
+        "xgboost": {
+            "raw": {
+                "accuracy": 0.8032786885245902,
+                "precision": 0.7666666666666667,
+                "recall": 0.8214285714285714,
+                "f1_score": 0.793103448275862,
+                "sensitivity": 0.8214285714285714,
+                "specificity": 0.7878787878787878,
+                "roc_auc": 0.8928571428571428,
+                "pr_auc": 0.8726599217927301,
+                "brier_score": 0.14065330636168052,
+                "confusion_matrix": {
+                    "tn": 26,
+                    "fp": 7,
+                    "fn": 5,
+                    "tp": 23
+                }
+            },
+            "calibrated": {
+                "accuracy": 0.8032786885245902,
+                "precision": 0.7857142857142857,
+                "recall": 0.7857142857142857,
+                "f1_score": 0.7857142857142857,
+                "sensitivity": 0.7857142857142857,
+                "specificity": 0.8181818181818182,
+                "roc_auc": 0.9069264069264069,
+                "pr_auc": 0.879609241369045,
+                "brier_score": 0.14055010830476827,
+                "confusion_matrix": {
+                    "tn": 27,
+                    "fp": 6,
+                    "fn": 6,
+                    "tp": 22
+                }
+            },
+            "subgroups": {
+                "sex_female": {
+                    "accuracy": 0.9,
+                    "precision": 1.0,
+                    "recall": 0.7142857142857143,
+                    "f1_score": 0.8333333333333333,
+                    "sensitivity": 0.7142857142857143,
+                    "specificity": 1.0,
+                    "roc_auc": 1.0,
+                    "pr_auc": 0.9999999999999998,
+                    "brier_score": 0.08783570875957071,
+                    "confusion_matrix": {
+                        "tn": 13,
+                        "fp": 0,
+                        "fn": 2,
+                        "tp": 5
+                    },
+                    "sample_size": 20,
+                    "warning": "Sample size too small for statistical significance (<30)"
+                },
+                "sex_male": {
+                    "accuracy": 0.7560975609756098,
+                    "precision": 0.7391304347826086,
+                    "recall": 0.8095238095238095,
+                    "f1_score": 0.7727272727272727,
+                    "sensitivity": 0.8095238095238095,
+                    "specificity": 0.7,
+                    "roc_auc": 0.8571428571428572,
+                    "pr_auc": 0.8651975364427922,
+                    "brier_score": 0.16626444954632805,
+                    "confusion_matrix": {
+                        "tn": 14,
+                        "fp": 6,
+                        "fn": 4,
+                        "tp": 17
+                    },
+                    "sample_size": 41,
+                    "warning": null
+                },
+                "age_<50": {
+                    "accuracy": 0.9444444444444444,
+                    "precision": 1.0,
+                    "recall": 0.8,
+                    "f1_score": 0.888888888888889,
+                    "sensitivity": 0.8,
+                    "specificity": 1.0,
+                    "roc_auc": 0.9846153846153847,
+                    "pr_auc": 0.9633333333333334,
+                    "brier_score": 0.08852380677652617,
+                    "confusion_matrix": {
+                        "tn": 13,
+                        "fp": 0,
+                        "fn": 1,
+                        "tp": 4
+                    },
+                    "sample_size": 18,
+                    "warning": "Sample size too small for statistical significance (<30)"
+                },
+                "age_50-65": {
+                    "accuracy": 0.7837837837837838,
+                    "precision": 0.8,
+                    "recall": 0.8,
+                    "f1_score": 0.8000000000000002,
+                    "sensitivity": 0.8,
+                    "specificity": 0.7647058823529411,
+                    "roc_auc": 0.8970588235294118,
+                    "pr_auc": 0.9114901576894614,
+                    "brier_score": 0.14912675162742708,
+                    "confusion_matrix": {
+                        "tn": 13,
+                        "fp": 4,
+                        "fn": 4,
+                        "tp": 16
+                    },
+                    "sample_size": 37,
+                    "warning": null
+                },
+                "age_>65": {
+                    "accuracy": 0.5,
+                    "precision": 0.5,
+                    "recall": 0.6666666666666666,
+                    "f1_score": 0.5714285714285715,
+                    "sensitivity": 0.6666666666666666,
+                    "specificity": 0.3333333333333333,
+                    "roc_auc": 0.5555555555555556,
+                    "pr_auc": 0.4611111111111111,
+                    "brier_score": 0.243739712399765,
+                    "confusion_matrix": {
+                        "tn": 1,
+                        "fp": 2,
+                        "fn": 1,
+                        "tp": 2
+                    },
+                    "sample_size": 6,
+                    "warning": "Sample size too small for statistical significance (<30)"
+                }
+            }
+        },
+        "svm": {
+            "raw": {
+                "accuracy": 0.8360655737704918,
+                "precision": 0.8214285714285714,
+                "recall": 0.8214285714285714,
+                "f1_score": 0.8214285714285714,
+                "sensitivity": 0.8214285714285714,
+                "specificity": 0.8484848484848485,
+                "roc_auc": 0.9166666666666666,
+                "pr_auc": 0.9000850583038897,
+                "brier_score": 0.12007350484259198,
+                "confusion_matrix": {
+                    "tn": 28,
+                    "fp": 5,
+                    "fn": 5,
+                    "tp": 23
+                }
+            },
+            "calibrated": {
+                "accuracy": 0.8360655737704918,
+                "precision": 0.8214285714285714,
+                "recall": 0.8214285714285714,
+                "f1_score": 0.8214285714285714,
+                "sensitivity": 0.8214285714285714,
+                "specificity": 0.8484848484848485,
+                "roc_auc": 0.9145021645021645,
+                "pr_auc": 0.897608355985002,
+                "brier_score": 0.12521050949942805,
+                "confusion_matrix": {
+                    "tn": 28,
+                    "fp": 5,
+                    "fn": 5,
+                    "tp": 23
+                }
+            },
+            "subgroups": {
+                "sex_female": {
+                    "accuracy": 0.9,
+                    "precision": 0.8571428571428571,
+                    "recall": 0.8571428571428571,
+                    "f1_score": 0.8571428571428571,
+                    "sensitivity": 0.8571428571428571,
+                    "specificity": 0.9230769230769231,
+                    "roc_auc": 0.989010989010989,
+                    "pr_auc": 0.9808673469387754,
+                    "brier_score": 0.07535718182159182,
+                    "confusion_matrix": {
+                        "tn": 12,
+                        "fp": 1,
+                        "fn": 1,
+                        "tp": 6
+                    },
+                    "sample_size": 20,
+                    "warning": "Sample size too small for statistical significance (<30)"
+                },
+                "sex_male": {
+                    "accuracy": 0.8048780487804879,
+                    "precision": 0.8095238095238095,
+                    "recall": 0.8095238095238095,
+                    "f1_score": 0.8095238095238095,
+                    "sensitivity": 0.8095238095238095,
+                    "specificity": 0.8,
+                    "roc_auc": 0.861904761904762,
+                    "pr_auc": 0.8768869584614627,
+                    "brier_score": 0.14952920592764085,
+                    "confusion_matrix": {
+                        "tn": 16,
+                        "fp": 4,
+                        "fn": 4,
+                        "tp": 17
+                    },
+                    "sample_size": 41,
+                    "warning": null
+                },
+                "age_<50": {
+                    "accuracy": 0.8888888888888888,
+                    "precision": 0.8,
+                    "recall": 0.8,
+                    "f1_score": 0.8000000000000002,
+                    "sensitivity": 0.8,
+                    "specificity": 0.9230769230769231,
+                    "roc_auc": 0.9384615384615385,
+                    "pr_auc": 0.9055555555555554,
+                    "brier_score": 0.10092259480803084,
+                    "confusion_matrix": {
+                        "tn": 12,
+                        "fp": 1,
+                        "fn": 1,
+                        "tp": 4
+                    },
+                    "sample_size": 18,
+                    "warning": "Sample size too small for statistical significance (<30)"
+                },
+                "age_50-65": {
+                    "accuracy": 0.8378378378378378,
+                    "precision": 0.8888888888888888,
+                    "recall": 0.8,
+                    "f1_score": 0.8421052631578948,
+                    "sensitivity": 0.8,
+                    "specificity": 0.8823529411764706,
+                    "roc_auc": 0.9264705882352942,
+                    "pr_auc": 0.941375211777773,
+                    "brier_score": 0.12396072082483287,
+                    "confusion_matrix": {
+                        "tn": 15,
+                        "fp": 2,
+                        "fn": 4,
+                        "tp": 16
+                    },
+                    "sample_size": 37,
+                    "warning": null
+                },
+                "age_>65": {
+                    "accuracy": 0.6666666666666666,
+                    "precision": 0.6,
+                    "recall": 1.0,
+                    "f1_score": 0.7499999999999999,
+                    "sensitivity": 1.0,
+                    "specificity": 0.3333333333333333,
+                    "roc_auc": 0.7777777777777779,
+                    "pr_auc": 0.7638888888888888,
+                    "brier_score": 0.2057812837336234,
+                    "confusion_matrix": {
+                        "tn": 1,
+                        "fp": 2,
+                        "fn": 0,
+                        "tp": 3
+                    },
+                    "sample_size": 6,
+                    "warning": "Sample size too small for statistical significance (<30)"
+                }
+            }
+        }
+    },
+    "nhanes_external_validation": {
+        "accuracy": 0.752638825149151,
+        "precision": 0.1658119658119658,
+        "recall": 0.6554054054054054,
+        "f1_score": 0.2646657571623465,
+        "sensitivity": 0.6554054054054054,
+        "specificity": 0.7597242737567701,
+        "roc_auc": 0.7858052383994039,
+        "pr_auc": 0.20320295705313315,
+        "brier_score": 0.156502847974567,
+        "confusion_matrix": {
+            "tn": 3086,
+            "fp": 976,
+            "fn": 102,
+            "tp": 194
+        },
+        "sample_size": 4358,
+        "status": "success"
+    }
+}
