@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import uuid
 import asyncio
@@ -6,6 +7,7 @@ import joblib
 import pandas as pd
 import numpy as np
 from typing import Dict, List, Optional
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
@@ -13,6 +15,14 @@ from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 from sklearn.metrics import roc_curve
 from sklearn.calibration import calibration_curve
+
+# Load .env for local development (Vercel uses its dashboard env vars)
+load_dotenv()
+
+# Ensure project root is on sys.path so ml.* and backend.* imports always resolve
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
 
 from ml.config import (
     FEATURES, NUMERICAL_FEATURES, TARGET, CP_MAPPING, 
@@ -27,9 +37,11 @@ from backend import chat_db
 from backend.hospital_service import search_locations, find_nearby_cardiology_hospitals, calculate_routes, scrape_hospital_doctors
 from fastapi import Depends
 
-# Paths
-MODELS_ARTIFACT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ml", "models", "artifacts", "models")
-METRICS_ARTIFACT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ml", "models", "artifacts", "metrics")
+# Paths — resolve relative to this file so they work from any working directory
+_BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+_ROOT_DIR = os.path.dirname(_BACKEND_DIR)
+MODELS_ARTIFACT_DIR = os.path.join(_ROOT_DIR, "ml", "models", "artifacts", "models")
+METRICS_ARTIFACT_DIR = os.path.join(_ROOT_DIR, "ml", "models", "artifacts", "metrics")
 
 app = FastAPI(title="CardioMind API", description="FastAPI Backend for Heart Disease AI Prediction System")
 

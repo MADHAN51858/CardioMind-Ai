@@ -59,7 +59,7 @@ import AuthScreen from "./AuthScreen";
 import HospitalLocator from "./HospitalLocator";
 import ChatMessage from "./ChatMessage";
 
-const API_BASE = "http://localhost:8000/api";
+const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
 
 // Setup Axios Interceptor for auth
 axios.interceptors.request.use(config => {
