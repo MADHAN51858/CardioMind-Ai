@@ -10,8 +10,8 @@ import google.generativeai as genai
 # Load environment variables
 _SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_ROOT = os.path.dirname(_SERVER_DIR)
-load_dotenv(os.path.join(_PROJECT_ROOT, ".env"))
-load_dotenv()
+load_dotenv(os.path.join(_PROJECT_ROOT, ".env"), override=True)
+load_dotenv(override=True)
 
 try:
     # pyrefly: ignore [missing-import]

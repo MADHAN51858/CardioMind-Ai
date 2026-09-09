@@ -3,22 +3,24 @@ import smtplib
 import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from dotenv import load_dotenv
-
-load_dotenv()
+_ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_ENV_PATH = os.path.join(_ROOT_DIR, ".env")
+load_dotenv(_ENV_PATH, override=True)
+load_dotenv(override=True)
 
 logger = logging.getLogger("mailer")
-
-EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
-EMAIL_USER = os.getenv("EMAIL_USER", "")
-EMAIL_PASS = os.getenv("EMAIL_PASS", "")
 
 def send_password_reset_email(to_email: str, username: str, otp_code: str, reset_link: str) -> bool:
     """
     Sends a beautifully formatted HTML password reset email containing
     both a 6-digit OTP and a direct 1-click reset link.
     """
+    load_dotenv(_ENV_PATH, override=True)
+    EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+    EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+    EMAIL_USER = os.getenv("EMAIL_USER", "").strip()
+    EMAIL_PASS = os.getenv("EMAIL_PASS", "").strip()
+
     if not EMAIL_USER or not EMAIL_PASS:
         logger.error("[Mailer] EMAIL_USER or EMAIL_PASS is not configured in .env")
         raise ValueError("Email service is not configured on the server. Please check SMTP settings.")

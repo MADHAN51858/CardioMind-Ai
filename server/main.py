@@ -25,8 +25,8 @@ _SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_ROOT = os.path.dirname(_SERVER_DIR)
 
 # Load unified root .env
-load_dotenv(os.path.join(_PROJECT_ROOT, ".env"))
-load_dotenv()
+load_dotenv(os.path.join(_PROJECT_ROOT, ".env"), override=True)
+load_dotenv(override=True)
 
 # Ensure project root & server dir are on sys.path
 for p in [_PROJECT_ROOT, _SERVER_DIR]:

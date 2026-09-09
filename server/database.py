@@ -7,34 +7,55 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING, DESCENDING
 
-load_dotenv()
+_ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_ENV_PATH = os.path.join(_ROOT_DIR, ".env")
+load_dotenv(_ENV_PATH, override=True)
+load_dotenv(override=True)
 
 logger = logging.getLogger("database")
 
-MONGO_URI = os.getenv("MONGO_URI", "")
+MONGO_URI = os.getenv("MONGO_URI", "").strip()
 MONGO_DB_NAME = "cardiomind"
 
 mongo_client = None
 mongo_db = None
 
-# Initialize MongoDB Atlas connection
+# Initialize MongoDB Atlas connection dynamically from .env
 if MONGO_URI:
     try:
-        mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+        import certifi
+        mongo_client = MongoClient(
+            MONGO_URI,
+            tlsCAFile=certifi.where(),
+            serverSelectionTimeoutMS=5000,
+            connectTimeoutMS=5000
+        )
         mongo_db = mongo_client[MONGO_DB_NAME]
-        # Verify connection
         mongo_client.admin.command("ping")
         # Setup unique and query indexes
-        mongo_db.users.create_index([("username", ASCENDING)], unique=True)
-        mongo_db.users.create_index([("email", ASCENDING)], unique=True, sparse=True)
+        mongo_db.users.create_index([("username", ASCENDING)])
+        mongo_db.users.create_index([("email", ASCENDING)], unique=True)
         mongo_db.password_resets.create_index([("token", ASCENDING)], unique=True)
         mongo_db.password_resets.create_index([("email", ASCENDING)])
         mongo_db.reports.create_index([("id", ASCENDING)], unique=True)
         mongo_db.reports.create_index([("user_id", ASCENDING), ("created_at", DESCENDING)])
-        logger.info(f"[DB] Connected to MongoDB Atlas ({MONGO_DB_NAME})")
+        logger.info(f"[DB] Connected to MongoDB Atlas ({MONGO_DB_NAME}) from .env")
     except Exception as e:
-        logger.warning(f"[DB] MongoDB Atlas connection error ({e}). Using local SQLite.")
-        mongo_db = None
+        # Fallback to standard client without custom TLS if certifi fails
+        try:
+            mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000, connectTimeoutMS=5000)
+            mongo_db = mongo_client[MONGO_DB_NAME]
+            mongo_client.admin.command("ping")
+            mongo_db.users.create_index([("username", ASCENDING)])
+            mongo_db.users.create_index([("email", ASCENDING)], unique=True)
+            mongo_db.password_resets.create_index([("token", ASCENDING)], unique=True)
+            mongo_db.password_resets.create_index([("email", ASCENDING)])
+            mongo_db.reports.create_index([("id", ASCENDING)], unique=True)
+            mongo_db.reports.create_index([("user_id", ASCENDING), ("created_at", DESCENDING)])
+            logger.info(f"[DB] Connected to MongoDB Atlas ({MONGO_DB_NAME}) from .env")
+        except Exception as e2:
+            logger.warning(f"[DB] MongoDB connection notice ({e2}). Using local SQLite fallback.")
+            mongo_db = None
 
 # Fallback SQLite DB
 _BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))

@@ -8,11 +8,14 @@ from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING, DESCENDING
 
-load_dotenv()
+_ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_ENV_PATH = os.path.join(_ROOT_DIR, ".env")
+load_dotenv(_ENV_PATH, override=True)
+load_dotenv(override=True)
 
 logger = logging.getLogger("chat_db")
 
-MONGO_URI = os.getenv("MONGO_URI", "")
+MONGO_URI = os.getenv("MONGO_URI", "").strip()
 MONGO_DB_NAME = "cardiomind"
 
 mongo_client = None
@@ -20,16 +23,31 @@ mongo_db = None
 
 if MONGO_URI:
     try:
-        mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+        import certifi
+        mongo_client = MongoClient(
+            MONGO_URI,
+            tlsCAFile=certifi.where(),
+            serverSelectionTimeoutMS=5000,
+            connectTimeoutMS=5000
+        )
         mongo_db = mongo_client[MONGO_DB_NAME]
         mongo_client.admin.command("ping")
         mongo_db.channels.create_index([("id", ASCENDING)], unique=True)
         mongo_db.channels.create_index([("user_id", ASCENDING), ("updated_at", DESCENDING)])
         mongo_db.messages.create_index([("channel_id", ASCENDING), ("created_at", ASCENDING)])
-        logger.info(f"[chat_db] Connected to MongoDB Atlas ({MONGO_DB_NAME}) for chat")
+        logger.info(f"[chat_db] Connected to MongoDB Atlas ({MONGO_DB_NAME}) for chat from .env")
     except Exception as e:
-        logger.warning(f"[chat_db] MongoDB connection error ({e}). Using local SQLite.")
-        mongo_db = None
+        try:
+            mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000, connectTimeoutMS=5000)
+            mongo_db = mongo_client[MONGO_DB_NAME]
+            mongo_client.admin.command("ping")
+            mongo_db.channels.create_index([("id", ASCENDING)], unique=True)
+            mongo_db.channels.create_index([("user_id", ASCENDING), ("updated_at", DESCENDING)])
+            mongo_db.messages.create_index([("channel_id", ASCENDING), ("created_at", ASCENDING)])
+            logger.info(f"[chat_db] Connected to MongoDB Atlas ({MONGO_DB_NAME}) for chat from .env")
+        except Exception as e2:
+            logger.warning(f"[chat_db] MongoDB connection notice ({e2}). Using local SQLite fallback.")
+            mongo_db = None
 
 # Fallback SQLite DB
 _BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
