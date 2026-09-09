@@ -1455,173 +1455,7 @@ export default function App() {
                         </Box>
                       </Card>
 
-                      {/* Instant Prediction Result Card if Available */}
-                      {predictionResult && (
-                        <Card
-                          sx={{
-                            mt: 3,
-                            p: 3.5,
-                            bgcolor: "#ffffff",
-                            borderRadius: "12px",
-                            border: "1px solid #e2e8f0",
-                            boxShadow: "0 4px 20px -2px rgba(15, 23, 42, 0.04)"
-                          }}
-                          className="animate-fade-in"
-                        >
-                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2.5, pb: 1.5, borderBottom: "1px solid #edf2f7" }}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                              <Box
-                                sx={{
-                                  width: 38,
-                                  height: 38,
-                                  borderRadius: "10px",
-                                  bgcolor: (predictionResult.probability <= 0.35) ? "#dcfce7" : (predictionResult.probability <= 0.70) ? "#fef3c7" : "#fee2e2",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center"
-                                }}
-                              >
-                                <VerifiedIcon sx={{ color: (predictionResult.probability <= 0.35) ? "#10b981" : (predictionResult.probability <= 0.70) ? "#f59e0b" : "#ef4444" }} />
-                              </Box>
-                              <Box>
-                                <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
-                                  AI Prediction Assessment
-                                </Typography>
-                                <Typography variant="caption" sx={{ color: "#64748b" }}>
-                                  Calibrated Risk Classification & Key Factors
-                                </Typography>
-                              </Box>
-                            </Box>
 
-                            <Chip
-                              label={predictionResult.category}
-                              sx={{
-                                fontWeight: 700,
-                                px: 1,
-                                bgcolor: (predictionResult.probability <= 0.35) ? "#dcfce7" : (predictionResult.probability <= 0.70) ? "#fef3c7" : "#fee2e2",
-                                color: (predictionResult.probability <= 0.35) ? "#15803d" : (predictionResult.probability <= 0.70) ? "#b45309" : "#b91c1c"
-                              }}
-                            />
-                          </Box>
-
-                          <Grid container spacing={3} alignItems="center">
-                            <Grid item xs={12} sm={4}>
-                              <Box sx={{ p: 2.5, bgcolor: "#f8fafc", borderRadius: 3, textAlign: "center", border: "1px solid #e2e8f0" }}>
-                                <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600 }}>
-                                  CALIBRATED RISK PROBABILITY
-                                </Typography>
-                                <Typography variant="h3" sx={{ fontWeight: 800, color: predictionResult.probability > 0.5 ? "#ef4444" : "#10b981", my: 0.5 }}>
-                                  {(predictionResult.probability * 100).toFixed(1)}%
-                                </Typography>
-                                <Typography variant="caption" sx={{ color: "#64748b" }}>
-                                  Confidence: {predictionResult.confidence || "High"}
-                                </Typography>
-                              </Box>
-                            </Grid>
-
-                            <Grid item xs={12} sm={8}>
-                              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0f172a", mb: 1 }}>
-                                Key Risk Influences (SHAP Explainability):
-                              </Typography>
-                              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                                  {predictionResult.top_positive_features?.map((f, i) => {
-                                    const val = f.value ?? f.shap_value ?? f.transformed_value;
-                                    const valStr = typeof val === 'number' ? (val > 0 ? `+${val.toFixed(2)}` : val.toFixed(2)) : (val !== undefined ? String(val) : '');
-                                    return (
-                                      <Chip
-                                        key={i}
-                                        label={`+ ${f.feature}${valStr ? `: ${valStr}` : ''}`}
-                                        size="small"
-                                        sx={{ bgcolor: "#fee2e2", color: "#b91c1c", fontWeight: 600, fontSize: "0.75rem" }}
-                                      />
-                                    );
-                                  })}
-                                  {predictionResult.top_negative_features?.map((f, i) => {
-                                    const val = f.value ?? f.shap_value ?? f.transformed_value;
-                                    const valStr = typeof val === 'number' ? (val > 0 ? `+${val.toFixed(2)}` : val.toFixed(2)) : (val !== undefined ? String(val) : '');
-                                    return (
-                                      <Chip
-                                        key={i}
-                                        label={`- ${f.feature}${valStr ? `: ${valStr}` : ''}`}
-                                        size="small"
-                                        sx={{ bgcolor: "#dcfce7", color: "#15803d", fontWeight: 600, fontSize: "0.75rem" }}
-                                      />
-                                    );
-                                  })}
-                                </Box>
-
-                              <Box sx={{ display: "flex", gap: 1.5, mt: 2.5, flexWrap: "wrap", alignItems: "center" }}>
-                                <Button
-                                  variant="outlined"
-                                  size="small"
-                                  startIcon={<PipelineIcon />}
-                                  onClick={() => navigate("/analysis")}
-                                  sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600 }}
-                                >
-                                  View Live Analysis
-                                </Button>
-                                <Button
-                                  variant="outlined"
-                                  size="small"
-                                  startIcon={<ChatIcon />}
-                                  onClick={() => navigate("/ai-chat")}
-                                  sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600 }}
-                                >
-                                  Consult CardioAI Chat
-                                </Button>
-                                <Button
-                                  variant="contained"
-                                  size="small"
-                                  color="success"
-                                  startIcon={generatingReport ? <CircularProgress size={16} color="inherit" /> : <ReportIcon />}
-                                  onClick={handleGenerateAndUploadReport}
-                                  disabled={generatingReport || !predictionResult}
-                                  sx={{
-                                    borderRadius: "8px",
-                                    textTransform: "none",
-                                    fontWeight: 700,
-                                    bgcolor: "#10b981",
-                                    "&:hover": { bgcolor: "#059669" }
-                                  }}
-                                >
-                                  {generatingReport ? "Generating & Uploading..." : "Generate Complete Report"}
-                                </Button>
-                                <Button
-                                  variant="outlined"
-                                  size="small"
-                                  startIcon={<DownloadIcon />}
-                                  onClick={handleDownloadPDF}
-                                  sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600 }}
-                                >
-                                  Download
-                                </Button>
-                              </Box>
-
-                              {/* Tab 1 Report Success Link Banner */}
-                              {reportSuccessUrl && (
-                                <Box sx={{ mt: 2, p: 1.5, bgcolor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}>
-                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                    <SuccessIcon color="success" fontSize="small" />
-                                    <Typography variant="body2" sx={{ color: "#166534", fontWeight: 700, fontSize: "0.82rem" }}>
-                                      Clinical Report (PNG) saved to Cloudinary & Database!
-                                    </Typography>
-                                  </Box>
-                                  <Button
-                                    size="small"
-                                    variant="contained"
-                                    color="success"
-                                    onClick={() => handleDownloadReportFromUrl(reportSuccessUrl, predictionResult?.id)}
-                                    startIcon={<DownloadIcon fontSize="small" />}
-                                    sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 700, fontSize: "0.78rem", py: 0.3 }}
-                                  >
-                                    Download 
-                                  </Button>
-                                </Box>
-                              )}
-                            </Grid>
-                          </Grid>
-                        </Card>
-                      )}
                     </Box>
 
                     {/* RIGHT COLUMN: Info Stack (~33% width, side-by-side on desktop) */}
@@ -1953,28 +1787,32 @@ export default function App() {
                             Model Contributions (Positive vs Negative Influences):
                           </Typography>
                           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2.5 }}>
-                            {predictionResult.top_positive_features?.map((f, i) => {
-                              const val = f.value ?? f.shap_value ?? f.transformed_value;
-                              const valStr = typeof val === 'number' ? (val > 0 ? `+${val.toFixed(2)}` : val.toFixed(2)) : (val !== undefined ? String(val) : '');
-                              return (
-                                <Chip
-                                  key={i}
-                                  label={`+ ${f.feature}${valStr ? `: ${valStr}` : ''}`}
-                                  sx={{ bgcolor: "#fee2e2", color: "#b91c1c", fontWeight: 600, fontSize: "0.78rem" ,borderRadius:"8px"}}
-                                />
-                              );
-                            })}
-                            {predictionResult.top_negative_features?.map((f, i) => {
-                              const val = f.value ?? f.shap_value ?? f.transformed_value;
-                              const valStr = typeof val === 'number' ? (val > 0 ? `+${val.toFixed(2)}` : val.toFixed(2)) : (val !== undefined ? String(val) : '');
-                              return (
-                                <Chip
-                                  key={i}
-                                  label={`- ${f.feature}${valStr ? `: ${valStr}` : ''}`}
-                                  sx={{ bgcolor: "#dcfce7", color: "#15803d", fontWeight: 600, fontSize: "0.78rem" ,borderRadius:"8px"}}
-                                />
-                              );
-                            })}
+                            {predictionResult.top_positive_features
+                              ?.filter(f => f.feature?.toLowerCase() !== 'sex' && f.feature?.toLowerCase() !== 'gender')
+                              ?.map((f, i) => {
+                                const val = f.value ?? f.shap_value ?? f.transformed_value;
+                                const valStr = typeof val === 'number' ? (val > 0 ? `+${val.toFixed(2)}` : val.toFixed(2)) : (val !== undefined ? String(val) : '');
+                                return (
+                                  <Chip
+                                    key={i}
+                                    label={`+ ${f.feature}${valStr ? `: ${valStr}` : ''}`}
+                                    sx={{ bgcolor: "#fee2e2", color: "#b91c1c", fontWeight: 600, fontSize: "0.78rem" ,borderRadius:"8px"}}
+                                  />
+                                );
+                              })}
+                            {predictionResult.top_negative_features
+                              ?.filter(f => f.feature?.toLowerCase() !== 'sex' && f.feature?.toLowerCase() !== 'gender')
+                              ?.map((f, i) => {
+                                const val = f.value ?? f.shap_value ?? f.transformed_value;
+                                const valStr = typeof val === 'number' ? (val > 0 ? `+${val.toFixed(2)}` : val.toFixed(2)) : (val !== undefined ? String(val) : '');
+                                return (
+                                  <Chip
+                                    key={i}
+                                    label={`- ${f.feature}${valStr ? `: ${valStr}` : ''}`}
+                                    sx={{ bgcolor: "#dcfce7", color: "#15803d", fontWeight: 600, fontSize: "0.78rem" ,borderRadius:"8px"}}
+                                  />
+                                );
+                              })}
                           </Box>
 
                           {/* Actions */}
