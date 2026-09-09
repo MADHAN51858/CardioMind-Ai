@@ -22,19 +22,24 @@ def test_auth_full_flow():
         "full_name": "Cardio Tester"
     }
 
-    # Clean up any existing record with same username/email if present
+    # Clean up any existing records for test emails and handles
+    test_emails = ["cardiotester_unit@example.com", "cardiotester_unit2@example.com", "updated_cardiotester@example.com"]
+    test_usernames = ["cardiotester_unit", "new_cardiotester_handle"]
+
     if mongo_db is not None:
         try:
-            mongo_db.users.delete_many({"$or": [{"username": test_user["username"]}, {"email": test_user["email"]}]})
-            mongo_db.password_resets.delete_many({"email": test_user["email"]})
+            mongo_db.users.delete_many({"$or": [{"username": {"$in": test_usernames}}, {"email": {"$in": test_emails}}]})
+            mongo_db.password_resets.delete_many({"email": {"$in": test_emails}})
         except Exception:
             pass
 
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM users WHERE username = ? OR email = ?", (test_user["username"], test_user["email"]))
-        cursor.execute("DELETE FROM password_resets WHERE email = ?", (test_user["email"],))
+        cursor.execute("DELETE FROM users WHERE username IN (?, ?) OR email IN (?, ?, ?)", 
+                       (test_usernames[0], test_usernames[1], test_emails[0], test_emails[1], test_emails[2]))
+        cursor.execute("DELETE FROM password_resets WHERE email IN (?, ?, ?)", 
+                       (test_emails[0], test_emails[1], test_emails[2]))
         conn.commit()
         conn.close()
 
@@ -45,9 +50,22 @@ def test_auth_full_flow():
     assert reg_data["user"]["username"] == "cardiotester_unit"
     assert reg_data["user"]["email"] == "cardiotester_unit@example.com"
 
-    # 2. Prevent duplicate registration
+    # 2. Prevent duplicate email registration
     dup_res = client.post("/api/auth/register", json=test_user)
     assert dup_res.status_code == 400
+    assert "email address already exists" in dup_res.json()["detail"]
+
+    # 2b. Allow multiple users with the SAME username but DIFFERENT emails
+    user2_same_username = {
+        "username": "cardiotester_unit",
+        "email": "cardiotester_unit2@example.com",
+        "password": "StrongPassword123!",
+        "full_name": "Second Person With Same Handle"
+    }
+    same_username_res = client.post("/api/auth/register", json=user2_same_username)
+    assert same_username_res.status_code == 200
+    assert same_username_res.json()["user"]["username"] == "cardiotester_unit"
+    assert same_username_res.json()["user"]["email"] == "cardiotester_unit2@example.com"
 
     # 3. Login with username
     login_user_res = client.post("/api/auth/login", json={
@@ -133,17 +151,21 @@ def test_auth_full_flow():
     auth_token = update_login.json()["access_token"]
     headers = {"Authorization": f"Bearer {auth_token}"}
 
-    # Successful update of full_name and email
+    # Successful update of username, full_name and email
     update_res = client.put("/api/auth/profile", json={
+        "username": "new_cardiotester_handle",
         "full_name": "Updated Cardio Tester",
         "email": "updated_cardiotester@example.com"
     }, headers=headers)
     assert update_res.status_code == 200
+    new_auth_token = update_res.json()["access_token"]
+    assert update_res.json()["user"]["username"] == "new_cardiotester_handle"
     assert update_res.json()["user"]["full_name"] == "Updated Cardio Tester"
     assert update_res.json()["user"]["email"] == "updated_cardiotester@example.com"
 
     # Verify profile via get_current_user_profile
-    me_res = client.get("/api/auth/me", headers=headers)
+    me_res = client.get("/api/auth/me", headers={"Authorization": f"Bearer {new_auth_token}"})
     assert me_res.status_code == 200
+    assert me_res.json()["username"] == "new_cardiotester_handle"
     assert me_res.json()["full_name"] == "Updated Cardio Tester"
     assert me_res.json()["email"] == "updated_cardiotester@example.com"

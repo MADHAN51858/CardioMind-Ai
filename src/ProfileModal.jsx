@@ -18,9 +18,9 @@ import {
   Close as CloseIcon,
   PersonOutlined as PersonIcon,
   EmailOutlined as EmailIcon,
-  LockOutlined as LockIcon,
   BadgeOutlined as BadgeIcon,
-  SaveOutlined as SaveIcon
+  SaveOutlined as SaveIcon,
+  AlternateEmail as AtIcon
 } from "@mui/icons-material";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
@@ -32,6 +32,7 @@ export default function ProfileModal({
   onProfileUpdated,
   showToast
 }) {
+  const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,6 +41,7 @@ export default function ProfileModal({
   // Sync state with currentUser whenever modal opens
   useEffect(() => {
     if (open && currentUser) {
+      setUsername(currentUser.username || "");
       setFullName(currentUser.fullName || "");
       setEmail(currentUser.email || "");
       setErrorMsg("");
@@ -50,16 +52,12 @@ export default function ProfileModal({
     if (e) e.preventDefault();
     setErrorMsg("");
 
-    const cleanFullName = fullName.trim();
+    const cleanUsername = username.trim() || "User";
+    const cleanFullName = fullName.trim() || cleanUsername;
     const cleanEmail = email.trim().toLowerCase();
 
-    if (!cleanFullName) {
-      setErrorMsg("Please enter your full name.");
-      return;
-    }
-
     if (!cleanEmail) {
-      setErrorMsg("Please enter your email address.");
+      setErrorMsg("Email address is mandatory and must be unique.");
       return;
     }
 
@@ -76,6 +74,7 @@ export default function ProfileModal({
       const res = await axios.put(
         `${API_BASE}/auth/profile`,
         {
+          username: cleanUsername,
           full_name: cleanFullName,
           email: cleanEmail
         },
@@ -85,12 +84,16 @@ export default function ProfileModal({
       );
 
       const updatedUser = {
-        username: currentUser.username,
+        username: res.data?.user?.username || cleanUsername,
         fullName: res.data?.user?.full_name || cleanFullName,
         email: res.data?.user?.email || cleanEmail
       };
 
       // Update localStorage
+      if (res.data?.access_token) {
+        localStorage.setItem("token", res.data.access_token);
+      }
+      localStorage.setItem("username", updatedUser.username);
       localStorage.setItem("fullName", updatedUser.fullName);
       localStorage.setItem("email", updatedUser.email);
 
@@ -115,7 +118,7 @@ export default function ProfileModal({
 
   if (!currentUser) return null;
 
-  const initialLetter = (fullName || currentUser.username || "U")
+  const initialLetter = (fullName || username || currentUser.username || "U")
     .charAt(0)
     .toUpperCase();
 
@@ -180,13 +183,13 @@ export default function ProfileModal({
           </Avatar>
         </Box>
 
-        <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: "-0.02em" }}>
+        <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: "-0.02em", color: "#ffffff" }}>
           Edit Profile
         </Typography>
         <Box sx={{ display: "flex", justifyContent: "center", mt: 0.5 }}>
           <Chip
             size="small"
-            label={`@${currentUser.username}`}
+            label={`@${username || currentUser.username}`}
             sx={{
               bgcolor: "rgba(255,255,255,0.2)",
               color: "#ffffff",
@@ -219,25 +222,30 @@ export default function ProfileModal({
           onSubmit={handleSubmit}
           sx={{ display: "flex", flexDirection: "column", gap: 2.2 }}
         >
-          {/* Username Field (Read Only) */}
+          {/* Email Address Field (MANDATORY & UNIQUE) */}
           <TextField
-            label="Username"
-            value={currentUser.username}
-            disabled
+            label="Email Address (Unique & Mandatory)"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             fullWidth
+            required
             size="small"
-            helperText="Username is unique and cannot be modified"
+            placeholder="e.g. alex.morgan@cardio.org"
+            helperText="Email is unique and required for authentication & recovery"
+            disabled={loading}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <LockIcon fontSize="small" sx={{ color: "#94a3b8" }} />
+                  <EmailIcon fontSize="small" sx={{ color: "#3b82f6" }} />
                 </InputAdornment>
               )
             }}
             sx={{
               "& .MuiOutlinedInput-root": {
-                bgcolor: "#f8fafc",
-                borderRadius: "10px"
+                borderRadius: "10px",
+                "&:hover fieldset": { borderColor: "#3b82f6" },
+                "&.Mui-focused fieldset": { borderColor: "#2563eb" }
               }
             }}
           />
@@ -248,7 +256,6 @@ export default function ProfileModal({
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             fullWidth
-            required
             size="small"
             placeholder="e.g. Dr. Alex Morgan"
             disabled={loading}
@@ -268,22 +275,20 @@ export default function ProfileModal({
             }}
           />
 
-          {/* Email Address Field */}
+          {/* Username Field (Editable & Non-unique) */}
           <TextField
-            label="Email Address"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            label="Username / Display Handle"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             fullWidth
-            required
             size="small"
-            placeholder="e.g. alex.morgan@cardio.org"
-            helperText="Used for security notifications & password resets"
+            placeholder="e.g. alex_cardio"
+            helperText="Usernames can be shared with other users"
             disabled={loading}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <EmailIcon fontSize="small" sx={{ color: "#3b82f6" }} />
+                  <AtIcon fontSize="small" sx={{ color: "#3b82f6" }} />
                 </InputAdornment>
               )
             }}

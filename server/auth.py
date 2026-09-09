@@ -17,6 +17,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/login")
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+    email: Optional[str] = None
 
 def verify_password(plain_password, hashed_password):
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
@@ -44,10 +45,12 @@ def get_current_user_token(token: str = Depends(oauth2_scheme)):
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
+        sub: str = payload.get("sub")
+        email: str = payload.get("email") or (sub if "@" in (sub or "") else None)
+        username: str = payload.get("username") or (sub if "@" not in (sub or "") else None)
+        if not sub and not email and not username:
             raise credentials_exception
-        token_data = TokenData(username=username)
+        token_data = TokenData(username=username, email=email)
     except jwt.PyJWTError:
         raise credentials_exception
     return token_data

@@ -178,6 +178,7 @@ class ResetPasswordRequest(BaseModel):
     new_password: str
 
 class UserProfileUpdate(BaseModel):
+    username: Optional[str] = None
     full_name: Optional[str] = None
     email: Optional[str] = None
 
@@ -262,22 +263,20 @@ def get_feature_importance():
 @app.post("/api/auth/register")
 @app.post("/api/signup")
 def register_user(user: UserRegister):
-    username = user.username.strip()
-    email = user.email.strip() if user.email else ""
-    full_name = user.full_name.strip() if user.full_name else ""
+    username = user.username.strip() if user.username else "User"
+    email = user.email.strip().lower() if user.email else ""
+    full_name = user.full_name.strip() if user.full_name else username
 
-    if len(username) < 3:
-        raise HTTPException(status_code=400, detail="Username must be at least 3 characters long.")
+    if not email:
+        raise HTTPException(status_code=400, detail="Email address is mandatory and must be unique.")
+    if not is_valid_email(email):
+        raise HTTPException(status_code=400, detail="Please enter a valid email address.")
     if len(user.password) < 6:
         raise HTTPException(status_code=400, detail="Password must be at least 6 characters long.")
-    if email and not is_valid_email(email):
-        raise HTTPException(status_code=400, detail="Please enter a valid email address.")
 
-    # Check if username or email is already taken
-    if get_user_by_username(username):
-        raise HTTPException(status_code=400, detail="Username already exists. Please choose a different username.")
-    if email and get_user_by_email(email):
-        raise HTTPException(status_code=400, detail="An account with this email address already exists.")
+    # Email is unique; username can be shared by multiple users
+    if get_user_by_email(email):
+        raise HTTPException(status_code=400, detail="An account with this email address already exists. Please sign in.")
 
     hashed_password = get_password_hash(user.password)
     success = create_user(username=username, hashed_password=hashed_password, email=email, full_name=full_name)
@@ -286,7 +285,7 @@ def register_user(user: UserRegister):
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": username, "email": email}, expires_delta=access_token_expires
+        data={"sub": email, "email": email, "username": username}, expires_delta=access_token_expires
     )
     return {
         "message": "Account created successfully.",
@@ -302,15 +301,15 @@ def register_user(user: UserRegister):
 @app.post("/api/auth/login")
 @app.post("/api/login")
 def login_user(user: UserLogin):
-    identifier = (user.identifier or user.username or user.email or "").strip()
+    identifier = (user.identifier or user.email or user.username or "").strip()
     if not identifier:
-        raise HTTPException(status_code=400, detail="Username or email is required.")
+        raise HTTPException(status_code=400, detail="Email address or username is required.")
 
     db_user = get_user_by_identifier(identifier)
     if not db_user or not verify_password(user.password, db_user["hashed_password"]):
         raise HTTPException(
             status_code=401,
-            detail="Incorrect username/email or password.",
+            detail="Incorrect email or password.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -320,7 +319,7 @@ def login_user(user: UserLogin):
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": username, "email": email}, expires_delta=access_token_expires
+        data={"sub": email or username, "email": email, "username": username}, expires_delta=access_token_expires
     )
     return {
         "access_token": access_token,
@@ -334,14 +333,15 @@ def login_user(user: UserLogin):
 
 @app.get("/api/auth/me")
 def get_current_user_profile(token_data: TokenData = Depends(get_current_user_token)):
-    db_user = get_user_by_username(token_data.username)
+    user_identifier = token_data.email or token_data.username
+    db_user = get_user_by_identifier(user_identifier) if user_identifier else None
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found.")
     return {
         "username": db_user["username"],
         "email": db_user["email"] or "",
         "full_name": db_user["full_name"] or db_user["username"],
-        "created_at": db_user["created_at"] or ""
+        "created_at": db_user.get("created_at") or ""
     }
 
 @app.put("/api/auth/profile")
@@ -349,30 +349,49 @@ def update_user_profile_endpoint(
     req: UserProfileUpdate,
     token_data: TokenData = Depends(get_current_user_token)
 ):
-    db_user = get_user_by_username(token_data.username)
+    user_identifier = token_data.email or token_data.username
+    db_user = get_user_by_identifier(user_identifier) if user_identifier else None
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found.")
 
-    new_full_name = req.full_name.strip() if req.full_name is not None else (db_user.get("full_name") or "")
-    new_email = req.email.strip() if req.email is not None else (db_user.get("email") or "")
+    current_email = db_user.get("email", "")
+    new_username = req.username.strip() if req.username is not None else (db_user.get("username") or "User")
+    new_full_name = req.full_name.strip() if req.full_name is not None else (db_user.get("full_name") or new_username)
+    new_email = req.email.strip().lower() if req.email is not None else current_email
 
-    if new_email:
-        if not is_valid_email(new_email):
-            raise HTTPException(status_code=400, detail="Please enter a valid email address.")
+    if not new_email:
+        raise HTTPException(status_code=400, detail="Email address is mandatory.")
+    if not is_valid_email(new_email):
+        raise HTTPException(status_code=400, detail="Please enter a valid email address.")
+
+    # If email changed, ensure new email is not already taken by another user
+    if new_email.lower() != current_email.lower():
         existing_user = get_user_by_email(new_email)
-        if existing_user and existing_user["username"].lower() != token_data.username.lower():
+        if existing_user and existing_user.get("email", "").lower() != current_email.lower():
             raise HTTPException(status_code=400, detail="This email address is already registered to another account.")
 
-    success = update_user_profile(token_data.username, email=new_email, full_name=new_full_name)
+    success = update_user_profile(
+        user_identifier=current_email or user_identifier,
+        email=new_email,
+        full_name=new_full_name,
+        username=new_username
+    )
     if not success:
         raise HTTPException(status_code=500, detail="Failed to update profile.")
 
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    new_access_token = create_access_token(
+        data={"sub": new_email, "email": new_email, "username": new_username}, expires_delta=access_token_expires
+    )
+
     return {
         "message": "Profile updated successfully.",
+        "access_token": new_access_token,
+        "token_type": "bearer",
         "user": {
-            "username": token_data.username,
+            "username": new_username,
             "email": new_email,
-            "full_name": new_full_name or token_data.username
+            "full_name": new_full_name or new_username
         }
     }
 

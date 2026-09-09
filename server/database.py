@@ -54,11 +54,25 @@ def init_db():
     try:
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
+
+        # Check existing table definition for migration
+        cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='users'")
+        table_row = cursor.fetchone()
+        if table_row and "username TEXT UNIQUE" in table_row[0]:
+            try:
+                cursor.execute("CREATE TABLE users_migrated (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, email TEXT UNIQUE NOT NULL, hashed_password TEXT NOT NULL, full_name TEXT, created_at TEXT)")
+                cursor.execute("INSERT OR IGNORE INTO users_migrated (id, username, email, hashed_password, full_name, created_at) SELECT id, username, COALESCE(email, username || '@cardiomind.local'), hashed_password, full_name, created_at FROM users")
+                cursor.execute("DROP TABLE users")
+                cursor.execute("ALTER TABLE users_migrated RENAME TO users")
+                conn.commit()
+            except Exception as mig_err:
+                logger.warning(f"[DB Migration] SQLite users migration note: {mig_err}")
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                email TEXT UNIQUE,
+                username TEXT NOT NULL,
+                email TEXT UNIQUE NOT NULL,
                 hashed_password TEXT NOT NULL,
                 full_name TEXT,
                 created_at TEXT
@@ -347,11 +361,13 @@ def get_user_by_identifier(identifier: str):
         return user_dict
     return None
 
-def create_user(username: str, hashed_password: str, email: str = "", full_name: str = ""):
+def create_user(username: str, hashed_password: str, email: str, full_name: str = ""):
+    if not email:
+        return False
     created_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
-    username_clean = username.strip()
-    email_clean = email.strip() if email else None
-    full_name_clean = full_name.strip() if full_name else None
+    username_clean = username.strip() if username else "User"
+    email_clean = email.strip().lower()
+    full_name_clean = full_name.strip() if full_name else username_clean
 
     # Keep SQLite in sync
     conn = get_db_connection()
@@ -359,7 +375,7 @@ def create_user(username: str, hashed_password: str, email: str = "", full_name:
         try:
             cursor = conn.cursor()
             cursor.execute(
-                "INSERT OR REPLACE INTO users (username, email, hashed_password, full_name, created_at) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO users (username, email, hashed_password, full_name, created_at) VALUES (?, ?, ?, ?, ?)",
                 (username_clean, email_clean, hashed_password, full_name_clean, created_at)
             )
             conn.commit()
@@ -370,23 +386,18 @@ def create_user(username: str, hashed_password: str, email: str = "", full_name:
 
     if mongo_db is not None:
         try:
-            # Check existing
-            or_clauses = [{"username": {"$regex": f"^{re.escape(username_clean)}$", "$options": "i"}}]
-            if email_clean:
-                or_clauses.append({"email": {"$regex": f"^{re.escape(email_clean)}$", "$options": "i"}})
-            existing = mongo_db.users.find_one({"$or": or_clauses})
+            # Check existing email only (usernames can be non-unique)
+            existing = mongo_db.users.find_one({"email": {"$regex": f"^{re.escape(email_clean)}$", "$options": "i"}})
             if existing:
                 return False
 
             doc = {
                 "username": username_clean,
+                "email": email_clean,
                 "hashed_password": hashed_password,
-                "full_name": full_name_clean or "",
+                "full_name": full_name_clean,
                 "created_at": created_at
             }
-            if email_clean:
-                doc["email"] = email_clean
-
             mongo_db.users.insert_one(doc)
             return True
         except Exception as e:
@@ -452,13 +463,15 @@ def update_user_password(identifier: str, hashed_password: str):
 
     return updated
 
-def update_user_profile(username: str, email: str = None, full_name: str = None):
-    if not username:
+def update_user_profile(user_identifier: str, email: str = None, full_name: str = None, username: str = None):
+    if not user_identifier:
         return False
-    username_clean = username.strip()
+    identifier_clean = user_identifier.strip()
     updated = False
 
     set_fields = {}
+    if username is not None:
+        set_fields["username"] = username.strip()
     if full_name is not None:
         set_fields["full_name"] = full_name.strip()
     if email is not None:
@@ -469,9 +482,9 @@ def update_user_profile(username: str, email: str = None, full_name: str = None)
 
     if mongo_db is not None:
         try:
-            rgx = {"$regex": f"^{re.escape(username_clean)}$", "$options": "i"}
+            rgx = {"$regex": f"^{re.escape(identifier_clean)}$", "$options": "i"}
             res = mongo_db.users.update_one(
-                {"username": rgx},
+                {"$or": [{"email": rgx}, {"username": rgx}]},
                 {"$set": set_fields}
             )
             if res.matched_count > 0:
@@ -485,14 +498,12 @@ def update_user_profile(username: str, email: str = None, full_name: str = None)
             cursor = conn.cursor()
             cols = []
             vals = []
-            if "full_name" in set_fields:
-                cols.append("full_name = ?")
-                vals.append(set_fields["full_name"])
-            if "email" in set_fields:
-                cols.append("email = ?")
-                vals.append(set_fields["email"])
-            vals.append(username_clean)
-            sql = f"UPDATE users SET {', '.join(cols)} WHERE username = ? COLLATE NOCASE"
+            for col_name, val in set_fields.items():
+                cols.append(f"{col_name} = ?")
+                vals.append(val)
+            vals.append(identifier_clean)
+            vals.append(identifier_clean)
+            sql = f"UPDATE users SET {', '.join(cols)} WHERE email = ? COLLATE NOCASE OR username = ? COLLATE NOCASE"
             cursor.execute(sql, tuple(vals))
             conn.commit()
             if cursor.rowcount > 0:
