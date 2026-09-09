@@ -1,0 +1,33 @@
+{
+    "logistic_regression": {
+        "best_params": {
+            "classifier__C": 1.0,
+            "classifier__penalty": "l2"
+        },
+        "best_cv_roc_auc": 0.8554024075763206
+    },
+    "random_forest": {
+        "best_params": {
+            "classifier__max_depth": 3,
+            "classifier__min_samples_split": 5,
+            "classifier__n_estimators": 100
+        },
+        "best_cv_roc_auc": 0.8448729209598774
+    },
+    "xgboost": {
+        "best_params": {
+            "classifier__learning_rate": 0.05,
+            "classifier__max_depth": 3,
+            "classifier__n_estimators": 50
+        },
+        "best_cv_roc_auc": 0.8203788160309899
+    },
+    "svm": {
+        "best_params": {
+            "classifier__C": 0.1,
+            "classifier__gamma": "scale",
+            "classifier__kernel": "linear"
+        },
+        "best_cv_roc_auc": 0.8494262581219102
+    }
+}

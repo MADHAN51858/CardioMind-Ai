@@ -6,12 +6,14 @@
  * Zero external dependencies required.
  */
 
-const { spawn, execSync } = require("child_process");
-const path = require("path");
-const fs = require("fs");
+import { spawn, execSync } from "child_process";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const ROOT_DIR = __dirname;
-const FRONTEND_DIR = path.join(ROOT_DIR, "frontend");
 
 // Terminal colors
 const RESET = "\x1b[0m";
@@ -29,7 +31,7 @@ console.log(`${BOLD}${CYAN}====================================================$
 
 // Parse CLI flags
 const args = process.argv.slice(2);
-const backendOnly = args.includes("--backend-only") || args.includes("--backend");
+const backendOnly = args.includes("--backend-only") || args.includes("--backend") || args.includes("--server");
 const frontendOnly = args.includes("--frontend-only") || args.includes("--frontend");
 
 /**
@@ -121,7 +123,7 @@ function startBackend() {
     PYTHONUNBUFFERED: "1"
   };
 
-  const backendProc = spawn(pyCmd, ["-m", "uvicorn", "backend.main:app", "--reload", "--port", "8000"], {
+  const backendProc = spawn(pyCmd, ["-m", "uvicorn", "server.main:app", "--reload", "--port", "8000"], {
     cwd: ROOT_DIR,
     env,
     stdio: ["ignore", "pipe", "pipe"],
@@ -163,17 +165,17 @@ function startFrontend() {
   freePort(5173);
 
   // Ensure frontend dependencies are installed
-  const nodeModulesPath = path.join(FRONTEND_DIR, "node_modules");
+  const nodeModulesPath = path.join(ROOT_DIR, "node_modules");
   if (!fs.existsSync(nodeModulesPath)) {
-    console.log(`${BLUE}[Frontend]${RESET} node_modules not found. Running npm install in frontend...`);
-    execSync("npm install", { cwd: FRONTEND_DIR, stdio: "inherit" });
+    console.log(`${BLUE}[Frontend]${RESET} node_modules not found. Running npm install...`);
+    execSync("npm install", { cwd: ROOT_DIR, stdio: "inherit" });
   }
 
   console.log(`${BLUE}[Frontend]${RESET} Starting Vite dev server on http://localhost:5173...`);
 
-  const npmCmd = process.platform === "win32" ? "npm.cmd" : "npm";
-  const frontendProc = spawn(npmCmd, ["run", "dev"], {
-    cwd: FRONTEND_DIR,
+  const npmCmd = process.platform === "win32" ? "npx.cmd" : "npx";
+  const frontendProc = spawn(npmCmd, ["vite"], {
+    cwd: ROOT_DIR,
     stdio: ["ignore", "pipe", "pipe"],
     shell: false
   });
