@@ -574,7 +574,7 @@ export default function App() {
     }
   };
 
-  // Download PDF Report Directly
+  // Download PDF Report Directly from Backend
   const handleDownloadPDF = () => {
     if (!predictionResult) return;
 
@@ -591,10 +591,40 @@ export default function App() {
         document.body.appendChild(link);
         link.click();
         link.remove();
+        showToast("PDF report downloaded to your device.", "success");
       })
       .catch(err => {
-        alert("Failed to download PDF report. Error: " + err.message);
+        showToast("Failed to download PDF report: " + err.message, "error");
       });
+  };
+
+  // Download PDF Report From Stored Cloudinary / Database URL Directly to Local
+  const handleDownloadReportFromUrl = async (url, reportId = "report") => {
+    if (!url) return;
+    try {
+      const cleanId = String(reportId || "report").replace(/^#/, "").replace(/^REC-/, "");
+      const filename = `cardio_report_${cleanId.length > 8 ? cleanId.slice(0, 8) : cleanId}.pdf`;
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+      showToast("PDF report downloaded to your device.", "success");
+    } catch (err) {
+      // Fallback: trigger download link
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `cardio_report_${reportId}.pdf`);
+      link.setAttribute('target', '_blank');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
   };
 
   // Generate Complete Report & Upload to Cloudinary & Store in DB
@@ -1585,13 +1615,11 @@ export default function App() {
                                     size="small"
                                     variant="contained"
                                     color="success"
-                                    href={reportSuccessUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    startIcon={<OpenInNewIcon fontSize="small" />}
+                                    onClick={() => handleDownloadReportFromUrl(reportSuccessUrl, predictionResult?.id)}
+                                    startIcon={<DownloadIcon fontSize="small" />}
                                     sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 700, fontSize: "0.78rem", py: 0.3 }}
                                   >
-                                    Open PDF Report ↗
+                                    Download PDF Report
                                   </Button>
                                 </Box>
                               )}
@@ -2013,13 +2041,11 @@ export default function App() {
                                   size="small"
                                   variant="contained"
                                   color="success"
-                                  href={reportSuccessUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  startIcon={<OpenInNewIcon fontSize="small" />}
+                                  onClick={() => handleDownloadReportFromUrl(reportSuccessUrl, predictionResult?.id)}
+                                  startIcon={<DownloadIcon fontSize="small" />}
                                   sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 700, fontSize: "0.78rem", py: 0.3 }}
                                 >
-                                  Open PDF Report ↗
+                                  Download PDF Report
                                 </Button>
                               </Box>
                             )}
@@ -2311,10 +2337,8 @@ export default function App() {
                                       size="small"
                                       variant="outlined"
                                       color="primary"
-                                      href={item.pdf_url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      startIcon={<OpenInNewIcon sx={{ fontSize: "14px !important" }} />}
+                                      onClick={() => handleDownloadReportFromUrl(item.pdf_url, item.id)}
+                                      startIcon={<DownloadIcon sx={{ fontSize: "14px !important" }} />}
                                       sx={{
                                         borderRadius: "8px",
                                         textTransform: "none",
@@ -2327,7 +2351,7 @@ export default function App() {
                                         "&:hover": { bgcolor: "#dbeafe" }
                                       }}
                                     >
-                                      View PDF
+                                      Download PDF
                                     </Button>
                                   ) : (
                                     <Typography variant="caption" sx={{ color: "#94a3b8" }}>—</Typography>
