@@ -45,7 +45,9 @@ def get_current_user_token(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         sub: str = payload.get("sub")
+        # pyrefly: ignore [bad-assignment]
         email: str = payload.get("email") or (sub if "@" in (sub or "") else None)
+        # pyrefly: ignore [bad-assignment]
         username: str = payload.get("username") or (sub if "@" not in (sub or "") else None)
         if not sub and not email and not username:
             raise credentials_exception
