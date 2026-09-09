@@ -3,6 +3,8 @@ import smtplib
 import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
+
 _ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _ENV_PATH = os.path.join(_ROOT_DIR, ".env")
 load_dotenv(_ENV_PATH, override=True)
