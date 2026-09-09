@@ -184,7 +184,6 @@ export default function App() {
     fbs: 0,
     fbsVal: 120,
     thalach: 145,
-    oldpeak: 0.0,
     exang: 0
   });
 
@@ -396,8 +395,7 @@ export default function App() {
       fbs: Number(patientData.fbs !== undefined ? patientData.fbs : (patientData.fbsVal > 120 ? 1 : 0)),
       fbsVal: Number(patientData.fbsVal || 120),
       thalach: Number(patientData.thalach),
-      exang: Number(patientData.exang || 0),
-      oldpeak: Number(patientData.oldpeak || 0.0)
+      exang: Number(patientData.exang || 0)
     };
 
     fetch(`${API_BASE}/predict-stream`, {
@@ -1396,35 +1394,6 @@ export default function App() {
                               />
                               <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.72rem", display: "block", mt: 0.2 }}>
                                 Peak heart rate.
-                              </Typography>
-                            </Box>
-                          </Box>
-
-                          {/* Row 3: ST Depression (ECG) */}
-                          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr" }, gap: 2.5, mt: 2.5 }}>
-                            {/* ST Depression */}
-                            <Box>
-                              <Typography variant="body2" sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8, display: "flex", alignItems: "center", gap: 0.8 }}>
-                                <ChartIcon sx={{ fontSize: 16, color: "#64748b" }} /> ECG ST Depression (oldpeak)
-                              </Typography>
-                              <FormControl fullWidth>
-                                <Select
-                                  value={patientData.oldpeak || 0.0}
-                                  onChange={(e) => handleInputChange("oldpeak", parseFloat(e.target.value))}
-                                  sx={{
-                                    bgcolor: "#ffffff",
-                                    borderRadius: "10px",
-                                    "& fieldset": { borderColor: "#e2e8f0" }
-                                  }}
-                                >
-                                  <MenuItem value={0.0}>Normal ST Segment (0.0 mm)</MenuItem>
-                                  <MenuItem value={1.0}>Mild ST Depression (1.0 mm)</MenuItem>
-                                  <MenuItem value={2.0}>Significant ST Depression (2.0 mm)</MenuItem>
-                                  <MenuItem value={3.0}>Severe ST Depression (≥ 3.0 mm)</MenuItem>
-                                </Select>
-                              </FormControl>
-                              <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.72rem", display: "block", mt: 0.8 }}>
-                                Exercise or resting ST segment depression relative to baseline (ischemia indicator).
                               </Typography>
                             </Box>
                           </Box>

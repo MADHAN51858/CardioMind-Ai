@@ -130,9 +130,10 @@ def explain_patient_prediction(patient_df):
     # Sort by SHAP value magnitude
     explanation_details_sorted = sorted(explanation_details, key=lambda x: x["shap_value"])
     
-    # Categorize contributors (excluding demographic attribute 'sex' from displayed clinical influences)
-    positive_contribs = [x for x in explanation_details_sorted if x["shap_value"] > 0 and x["feature"].lower() not in ["sex", "gender"]]
-    negative_contribs = [x for x in explanation_details_sorted if x["shap_value"] < 0 and x["feature"].lower() not in ["sex", "gender"]]
+    # Categorize contributors (excluding demographic attribute 'sex' and removed 'oldpeak' from displayed clinical influences)
+    excluded_features = {"sex", "gender", "oldpeak"}
+    positive_contribs = [x for x in explanation_details_sorted if x["shap_value"] > 0 and x["feature"].lower() not in excluded_features]
+    negative_contribs = [x for x in explanation_details_sorted if x["shap_value"] < 0 and x["feature"].lower() not in excluded_features]
     
     # Sort positive descending, negative ascending
     positive_contribs = sorted(positive_contribs, key=lambda x: x["shap_value"], reverse=True)

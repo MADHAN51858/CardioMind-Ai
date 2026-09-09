@@ -179,7 +179,6 @@ export function generateReportCanvas(patientData, predictionResult, currentUser)
     { label: "Resting ECG", value: restecgLabels[p.restecg] || "Normal" },
     { label: "Max Heart Rate (thalach)", value: `${p.thalach || 150} bpm` },
     { label: "Exercise Induced Angina", value: p.exang === 1 || p.exang === "1" ? "Yes (Present)" : "No" },
-    { label: "ST Depression (Oldpeak)", value: `${p.oldpeak || 0.0} mm` },
     { label: "Peak Exercise Slope", value: slopeLabels[p.slope] || "Upsloping" },
     { label: "Major Vessels (Fluoroscopy)", value: `${p.ca || 0} vessels` },
     { label: "Thalassemia Status", value: thalLabels[p.thal] || "Normal" }
@@ -220,7 +219,7 @@ export function generateReportCanvas(patientData, predictionResult, currentUser)
     { name: "Chest Pain Presentation (cp)", weight: 0.88, impact: "High Risk Indicator", color: "#ef4444" },
     { name: "Serum Cholesterol (chol)", weight: 0.72, impact: "Moderate Elevation", color: "#f59e0b" },
     { name: "Maximum Heart Rate (thalach)", weight: 0.65, impact: "Cardiovascular Stress", color: "#f59e0b" },
-    { name: "ST Depression (oldpeak)", weight: 0.54, impact: "Ischemia Marker", color: "#3b82f6" },
+    { name: "Resting Blood Pressure (trestbps)", weight: 0.58, impact: "Hypertension Risk", color: "#3b82f6" },
     { name: "Major Vessel Calcification (ca)", weight: 0.46, impact: "Arterial Occlusion Indicator", color: "#10b981" }
   ];
 
