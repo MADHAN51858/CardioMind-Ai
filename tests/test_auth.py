@@ -124,3 +124,26 @@ def test_auth_full_flow():
         "new_password": "YetAnotherPassword111!"
     })
     assert reused_res.status_code == 400
+
+    # 12. Test Update Profile
+    update_login = client.post("/api/auth/login", json={
+        "username": "cardiotester_unit",
+        "password": "AnotherNewPassword789!"
+    })
+    auth_token = update_login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {auth_token}"}
+
+    # Successful update of full_name and email
+    update_res = client.put("/api/auth/profile", json={
+        "full_name": "Updated Cardio Tester",
+        "email": "updated_cardiotester@example.com"
+    }, headers=headers)
+    assert update_res.status_code == 200
+    assert update_res.json()["user"]["full_name"] == "Updated Cardio Tester"
+    assert update_res.json()["user"]["email"] == "updated_cardiotester@example.com"
+
+    # Verify profile via get_current_user_profile
+    me_res = client.get("/api/auth/me", headers=headers)
+    assert me_res.status_code == 200
+    assert me_res.json()["full_name"] == "Updated Cardio Tester"
+    assert me_res.json()["email"] == "updated_cardiotester@example.com"

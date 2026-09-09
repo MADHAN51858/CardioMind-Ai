@@ -452,6 +452,58 @@ def update_user_password(identifier: str, hashed_password: str):
 
     return updated
 
+def update_user_profile(username: str, email: str = None, full_name: str = None):
+    if not username:
+        return False
+    username_clean = username.strip()
+    updated = False
+
+    set_fields = {}
+    if full_name is not None:
+        set_fields["full_name"] = full_name.strip()
+    if email is not None:
+        set_fields["email"] = email.strip().lower()
+
+    if not set_fields:
+        return True
+
+    if mongo_db is not None:
+        try:
+            rgx = {"$regex": f"^{re.escape(username_clean)}$", "$options": "i"}
+            res = mongo_db.users.update_one(
+                {"username": rgx},
+                {"$set": set_fields}
+            )
+            if res.matched_count > 0:
+                updated = True
+        except Exception as e:
+            logger.error(f"[MongoDB] Error updating user profile: {e}")
+
+    conn = get_db_connection()
+    if conn is not None:
+        try:
+            cursor = conn.cursor()
+            cols = []
+            vals = []
+            if "full_name" in set_fields:
+                cols.append("full_name = ?")
+                vals.append(set_fields["full_name"])
+            if "email" in set_fields:
+                cols.append("email = ?")
+                vals.append(set_fields["email"])
+            vals.append(username_clean)
+            sql = f"UPDATE users SET {', '.join(cols)} WHERE username = ? COLLATE NOCASE"
+            cursor.execute(sql, tuple(vals))
+            conn.commit()
+            if cursor.rowcount > 0:
+                updated = True
+        except Exception as e:
+            logger.error(f"[DB] Failed to update user profile in SQLite: {e}")
+        finally:
+            conn.close()
+
+    return updated
+
 # ── Password Reset Operations ────────────────────────────────────────────────
 
 def create_password_reset(email: str, otp: str, token: str, expires_minutes: int = 15):

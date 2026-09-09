@@ -52,8 +52,8 @@ try:
     )
     from server.database import (
         init_db, create_user, get_user_by_username, get_user_by_email,
-        get_user_by_identifier, update_user_password, create_password_reset,
-        verify_password_reset_otp, verify_password_reset_token,
+        get_user_by_identifier, update_user_password, update_user_profile,
+        create_password_reset, verify_password_reset_otp, verify_password_reset_token,
         mark_password_reset_used, save_report, get_all_reports
     )
     from server.mailer import send_password_reset_email
@@ -75,8 +75,8 @@ except ImportError:
     )
     from database import (
         init_db, create_user, get_user_by_username, get_user_by_email,
-        get_user_by_identifier, update_user_password, create_password_reset,
-        verify_password_reset_otp, verify_password_reset_token,
+        get_user_by_identifier, update_user_password, update_user_profile,
+        create_password_reset, verify_password_reset_otp, verify_password_reset_token,
         mark_password_reset_used, save_report, get_all_reports
     )
     from mailer import send_password_reset_email
@@ -176,6 +176,10 @@ class ResetPasswordRequest(BaseModel):
     otp: Optional[str] = None
     token: Optional[str] = None
     new_password: str
+
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
 
 def is_valid_email(email: str) -> bool:
     if not email:
@@ -338,6 +342,38 @@ def get_current_user_profile(token_data: TokenData = Depends(get_current_user_to
         "email": db_user["email"] or "",
         "full_name": db_user["full_name"] or db_user["username"],
         "created_at": db_user["created_at"] or ""
+    }
+
+@app.put("/api/auth/profile")
+def update_user_profile_endpoint(
+    req: UserProfileUpdate,
+    token_data: TokenData = Depends(get_current_user_token)
+):
+    db_user = get_user_by_username(token_data.username)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    new_full_name = req.full_name.strip() if req.full_name is not None else (db_user.get("full_name") or "")
+    new_email = req.email.strip() if req.email is not None else (db_user.get("email") or "")
+
+    if new_email:
+        if not is_valid_email(new_email):
+            raise HTTPException(status_code=400, detail="Please enter a valid email address.")
+        existing_user = get_user_by_email(new_email)
+        if existing_user and existing_user["username"].lower() != token_data.username.lower():
+            raise HTTPException(status_code=400, detail="This email address is already registered to another account.")
+
+    success = update_user_profile(token_data.username, email=new_email, full_name=new_full_name)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to update profile.")
+
+    return {
+        "message": "Profile updated successfully.",
+        "user": {
+            "username": token_data.username,
+            "email": new_email,
+            "full_name": new_full_name or token_data.username
+        }
     }
 
 @app.post("/api/auth/forgot-password")

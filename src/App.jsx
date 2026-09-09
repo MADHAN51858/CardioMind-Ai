@@ -67,7 +67,8 @@ import {
   Logout as LogoutIcon,
   LockReset as LockResetIcon,
   Login as LoginIcon,
-  PersonAdd as PersonAddIcon
+  PersonAdd as PersonAddIcon,
+  ManageAccounts as ProfileIcon
 } from "@mui/icons-material";
 import HospitalLocator from "./HospitalLocator";
 import ChatMessage from "./ChatMessage";
@@ -76,6 +77,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import ProfileModal from "./ProfileModal";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
 
@@ -141,6 +143,7 @@ export default function App() {
   });
 
   const [userMenuAnchor, setUserMenuAnchor] = useState(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   // Toast / Snackbar Feedback
   const [toast, setToast] = useState({ open: false, message: "", severity: "info" });
@@ -979,6 +982,18 @@ export default function App() {
                       </ListItemIcon>
                       Reset Password
                     </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        setUserMenuAnchor(null);
+                        setProfileModalOpen(true);
+                      }}
+                      sx={{ fontSize: "0.88rem", py: 1 }}
+                    >
+                      <ListItemIcon>
+                        <ProfileIcon fontSize="small" sx={{ color: "#0ea5e9" }} />
+                      </ListItemIcon>
+                      Profile
+                    </MenuItem>
                     <Divider sx={{ my: 0.5 }} />
                     <MenuItem
                       onClick={handleLogout}
@@ -1095,28 +1110,13 @@ export default function App() {
                             <Typography variant="h5" sx={{ fontWeight: 800, color: "#0f172a", fontSize: { xs: "1.25rem", sm: "1.45rem" } }}>
                               Heart Disease Risk Prediction
                             </Typography>
-                            <Typography variant="body2" sx={{ color: "#64748b", mt: 0.5, lineHeight: 1.5 }}>
-                              Enter the patient's health parameters below to get an AI-powered prediction of heart disease risk. This tool uses machine learning to analyze your inputs and provide a risk assessment.
-                            </Typography>
+                            
                           </Box>
                         </Box>
 
                         {/* SECTION 1: Patient Information */}
-                        <Box sx={{ mb: 3.5 }}>
-                          <Typography
-                            variant="subtitle1"
-                            sx={{
-                              fontWeight: 700,
-                              color: "#0f172a",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                              pb: 1,
-                              borderBottom: "1px solid #edf2f7"
-                            }}
-                          >
-                            <PersonIcon sx={{ color: "#3b82f6", fontSize: 20 }} /> Patient Information
-                          </Typography>
+                        <Box sx={{ mb: 2 }}>
+                       
 
                           <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2.5, mt: 2 }}>
                             {/* Age */}
@@ -1210,7 +1210,7 @@ export default function App() {
                                 }}
                               />
                               <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.72rem", display: "block", mt: 0.2 }}>
-                                Measured via home BP cuff or clinic reading.
+                                Measured via home or clinic reading.
                               </Typography>
                             </Box>
 
@@ -1266,7 +1266,7 @@ export default function App() {
                                 }}
                               />
                               <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.72rem", display: "block", mt: 0.2 }}>
-                                Fasting blood glucose or finger-prick test.
+                                Fasting blood glucose.
                               </Typography>
                             </Box>
                           </Box>
@@ -1319,14 +1319,14 @@ export default function App() {
                                 </Select>
                               </FormControl>
                               <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.72rem", display: "block", mt: 0.8 }}>
-                                Discomfort or pressure during physical activity.
+                                Discomfort during physical activity.
                               </Typography>
                             </Box>
 
                             {/* Heart Rate / Pulse */}
                             <Box>
                               <Typography variant="body2" sx={{ fontWeight: 600, color: "#0f172a", mb: 0.8, display: "flex", alignItems: "center", gap: 0.8 }}>
-                                <ChartIcon sx={{ fontSize: 16, color: "#64748b" }} /> Heart Rate / Pulse (bpm)
+                                <ChartIcon sx={{ fontSize: 16, color: "#64748b" }} /> Heart Rate (bpm)
                               </Typography>
                               <TextField
                                 fullWidth
@@ -1347,7 +1347,7 @@ export default function App() {
                                 }}
                               />
                               <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.72rem", display: "block", mt: 0.2 }}>
-                                Resting pulse or peak stress heart rate.
+                                Peak heart rate.
                               </Typography>
                             </Box>
                           </Box>
@@ -2305,6 +2305,21 @@ export default function App() {
           </Box>
         </Box>
       </Box>
+
+      {/* Profile Edit Modal */}
+      <ProfileModal
+        open={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+        currentUser={currentUser}
+        onProfileUpdated={(updated) => {
+          setCurrentUser((prev) => ({
+            ...prev,
+            fullName: updated.fullName,
+            email: updated.email
+          }));
+        }}
+        showToast={showToast}
+      />
 
       {/* Toast Notification Snackbar */}
       <Snackbar
