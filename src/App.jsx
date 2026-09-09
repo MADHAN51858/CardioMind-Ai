@@ -814,11 +814,16 @@ export default function App() {
                       {item.icon}
                     </ListItemIcon>
                     <ListItemText
-                      primary={item.text}
-                      primaryTypographyProps={{
-                        fontWeight: isSelected ? 700 : 500,
-                        fontSize: "0.9rem"
-                      }}
+                      primary={
+                        <Typography
+                          sx={{
+                            fontWeight: isSelected ? 700 : 500,
+                            fontSize: "0.9rem"
+                          }}
+                        >
+                          {item.text}
+                        </Typography>
+                      }
                     />
                   </ListItemButton>
                 </ListItem>
@@ -1746,14 +1751,28 @@ export default function App() {
                                   secondaryAction={getStageIcon(status)}
                                 >
                                   <ListItemText
-                                    primary={stage.label}
-                                    secondary={status.toUpperCase()}
-                                    primaryTypographyProps={{ fontWeight: currentStage === stage.key ? 700 : 500, color: "#0f172a", fontSize: "0.85rem" }}
-                                    secondaryTypographyProps={{
-                                      color: status === "completed" ? "success.main" : status === "processing" ? "primary.main" : "text.secondary",
-                                      fontWeight: 700,
-                                      fontSize: "0.70rem"
-                                    }}
+                                    primary={
+                                      <Typography
+                                        sx={{
+                                          fontWeight: currentStage === stage.key ? 700 : 500,
+                                          color: "#0f172a",
+                                          fontSize: "0.85rem"
+                                        }}
+                                      >
+                                        {stage.label}
+                                      </Typography>
+                                    }
+                                    secondary={
+                                      <Typography
+                                        sx={{
+                                          color: status === "completed" ? "success.main" : status === "processing" ? "primary.main" : "text.secondary",
+                                          fontWeight: 700,
+                                          fontSize: "0.70rem"
+                                        }}
+                                      >
+                                        {status.toUpperCase()}
+                                      </Typography>
+                                    }
                                   />
                                 </ListItem>
                               );
@@ -2063,13 +2082,18 @@ export default function App() {
                                     }}
                                   >
                                     <ListItemText
-                                      primary={c.title || "Cardio Consultation"}
-                                      primaryTypographyProps={{
-                                        noWrap: true,
-                                        fontSize: "0.85rem",
-                                        fontWeight: activeChannelId === c.id ? 700 : 500,
-                                        color: activeChannelId === c.id ? "#2563eb" : "#0f172a"
-                                      }}
+                                      primary={
+                                        <Typography
+                                          noWrap
+                                          sx={{
+                                            fontSize: "0.85rem",
+                                            fontWeight: activeChannelId === c.id ? 700 : 500,
+                                            color: activeChannelId === c.id ? "#2563eb" : "#0f172a"
+                                          }}
+                                        >
+                                          {c.title || "Cardio Consultation"}
+                                        </Typography>
+                                      }
                                     />
                                   </ListItemButton>
                                 </ListItem>
