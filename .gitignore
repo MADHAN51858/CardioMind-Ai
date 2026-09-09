@@ -33,7 +33,6 @@ ml/models/artifacts/plots/
 
 # Python-Vercel files (backend runs on Railway, not Vercel)
 api/
-pyproject.toml
 uv.lock
 .python-version
 
