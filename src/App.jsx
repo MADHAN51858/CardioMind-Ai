@@ -638,14 +638,23 @@ export default function App() {
     { text: "Reports", path: "/reports", icon: <ReportIcon /> }
   ];
 
-  // Render standalone auth routes
+  // 1. If user is already logged in and navigates to login/register, redirect to dashboard
+  if (currentUser && (location.pathname === "/login" || location.pathname === "/register")) {
+    return <Navigate to="/heart-risk-prediction" replace />;
+  }
+
+  // 2. Standalone auth routes (accessible without login)
   if (location.pathname === "/login") {
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <LoginPage
           onLoginSuccess={(user) => {
-            setCurrentUser(user);
+            setCurrentUser({
+              username: user.username,
+              email: user.email || "",
+              fullName: user.full_name || user.username
+            });
             showToast(`Welcome back, ${user.full_name || user.username}!`, "success");
           }}
         />
@@ -669,7 +678,11 @@ export default function App() {
         <CssBaseline />
         <RegisterPage
           onLoginSuccess={(user) => {
-            setCurrentUser(user);
+            setCurrentUser({
+              username: user.username,
+              email: user.email || "",
+              fullName: user.full_name || user.username
+            });
             showToast(`Welcome to CardioMind, ${user.full_name || user.username}!`, "success");
           }}
         />
@@ -723,6 +736,11 @@ export default function App() {
         </Snackbar>
       </ThemeProvider>
     );
+  }
+
+  // 3. Strict Auth Guard: Without login, DO NOT render any pages — redirect to /login
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
   }
 
   if (location.pathname === "/") {
