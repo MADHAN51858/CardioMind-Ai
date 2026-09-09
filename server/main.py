@@ -779,11 +779,12 @@ async def delete_channel(channel_id: str):
 @app.post("/api/report/generate-and-upload")
 def generate_and_upload_report(payload: dict = Body(...), username: str = Depends(get_optional_user)):
     """
-    Generate a complete research PDF report, upload it to Cloudinary,
+    Upload clinical report image/document to Cloudinary,
     persist the link and record in the database, and return the secure URL.
     """
     patient = payload.get("patient")
     prediction = payload.get("prediction")
+    image_data = payload.get("image_data")
     
     if not patient or not prediction:
         raise HTTPException(status_code=400, detail="Missing patient inputs or prediction results in payload")
@@ -814,13 +815,6 @@ def generate_and_upload_report(payload: dict = Body(...), username: str = Depend
     temp_filename = f"temp_report_{uuid.uuid4().hex}.pdf"
     
     try:
-        generate_pdf_report(
-            patient_display,
-            prediction,
-            evaluation_metrics.get("models", {}),
-            temp_filename
-        )
-        
         # Configure Cloudinary
         cloudinary.config(
             cloud_name=cloud_name,
@@ -828,16 +822,31 @@ def generate_and_upload_report(payload: dict = Body(...), username: str = Depend
             api_secret=api_secret,
             secure=True
         )
-        
-        # Upload to Cloudinary
-        upload_result = cloudinary.uploader.upload(
-            temp_filename,
-            resource_type="raw",
-            folder="cardiomind_reports",
-            public_id=f"cardio_report_{report_id}.pdf",
-            use_filename=True,
-            unique_filename=True
-        )
+
+        if image_data:
+            # Upload canvas PNG image directly to Cloudinary
+            upload_result = cloudinary.uploader.upload(
+                image_data,
+                resource_type="image",
+                folder="cardiomind_reports",
+                public_id=f"cardio_report_{report_id}",
+                format="png"
+            )
+        else:
+            generate_pdf_report(
+                patient_display,
+                prediction,
+                evaluation_metrics.get("models", {}),
+                temp_filename
+            )
+            upload_result = cloudinary.uploader.upload(
+                temp_filename,
+                resource_type="raw",
+                folder="cardiomind_reports",
+                public_id=f"cardio_report_{report_id}.pdf",
+                use_filename=True,
+                unique_filename=True
+            )
         
         pdf_url = upload_result.get("secure_url") or upload_result.get("url")
         

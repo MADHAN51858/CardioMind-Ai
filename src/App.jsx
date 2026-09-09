@@ -78,6 +78,7 @@ import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProfileModal from "./ProfileModal";
+import { downloadReportAsPNG, getReportPNGDataURL } from "./reportCanvas";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
 
@@ -574,39 +575,30 @@ export default function App() {
     }
   };
 
-  // Download PDF Report Directly from Backend
+  // Download Report Image (PNG) Directly using HTML5 Canvas
   const handleDownloadPDF = () => {
     if (!predictionResult) return;
-
-    axios.post(`${API_BASE}/report`, {
-      patient: patientData,
-      prediction: predictionResult
-    }, { responseType: 'blob' })
-      .then(response => {
-        const file = new Blob([response.data], { type: 'application/pdf' });
-        const fileURL = URL.createObjectURL(file);
-        const link = document.createElement('a');
-        link.href = fileURL;
-        link.setAttribute('download', `cardio_report_${predictionResult.id ? predictionResult.id.slice(0, 6) : 'latest'}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        showToast("PDF report downloaded to your device.", "success");
-      })
-      .catch(err => {
-        showToast("Failed to download PDF report: " + err.message, "error");
-      });
+    try {
+      downloadReportAsPNG(patientData, predictionResult, currentUser);
+      showToast("Report image generated and downloaded as PNG.", "success");
+    } catch (err) {
+      showToast("Failed to generate report image: " + err.message, "error");
+    }
   };
 
-  // Download PDF Report From Stored Cloudinary / Database URL Directly to Local
+  // Download Report From Stored Cloudinary / Database URL Directly to Local
   const handleDownloadReportFromUrl = async (url, reportId = "report") => {
     if (!url) return;
     try {
       const cleanId = String(reportId || "report").replace(/^#/, "").replace(/^REC-/, "");
-      const filename = `cardio_report_${cleanId.length > 8 ? cleanId.slice(0, 8) : cleanId}.pdf`;
+      const isPng = url.toLowerCase().includes(".png") || !url.toLowerCase().includes(".pdf");
+      const ext = isPng ? "png" : "pdf";
+      const filename = `cardio_report_${cleanId.length > 8 ? cleanId.slice(0, 8) : cleanId}.${ext}`;
+      
       const response = await fetch(url);
       const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+      const mimeType = isPng ? "image/png" : "application/pdf";
+      const blobUrl = window.URL.createObjectURL(new Blob([blob], { type: mimeType }));
       const link = document.createElement('a');
       link.href = blobUrl;
       link.setAttribute('download', filename);
@@ -614,12 +606,12 @@ export default function App() {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(blobUrl);
-      showToast("PDF report downloaded to your device.", "success");
+      showToast(`Report downloaded as ${ext.toUpperCase()} to your device.`, "success");
     } catch (err) {
-      // Fallback: trigger download link
+      // Fallback
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `cardio_report_${reportId}.pdf`);
+      link.setAttribute('download', `cardio_report_${reportId}.png`);
       link.setAttribute('target', '_blank');
       document.body.appendChild(link);
       link.click();
@@ -627,23 +619,26 @@ export default function App() {
     }
   };
 
-  // Generate Complete Report & Upload to Cloudinary & Store in DB
+  // Generate Canvas PNG Report & Upload to Cloudinary & Store in DB
   const handleGenerateAndUploadReport = async () => {
     if (!predictionResult) return;
     setGeneratingReport(true);
     setReportError(null);
     try {
+      const imgDataUrl = getReportPNGDataURL(patientData, predictionResult, currentUser);
       const response = await axios.post(`${API_BASE}/report/generate-and-upload`, {
         patient: patientData,
-        prediction: predictionResult
+        prediction: predictionResult,
+        image_data: imgDataUrl
       });
       if (response.data?.pdf_url) {
         setReportSuccessUrl(response.data.pdf_url);
         fetchHistory();
+        showToast("Report image uploaded and saved successfully!", "success");
       }
     } catch (err) {
       console.error("Cloudinary report error:", err);
-      const errMsg = err.response?.data?.detail || err.message || "Failed to generate and upload PDF report.";
+      const errMsg = err.response?.data?.detail || err.message || "Failed to generate and upload report.";
       setReportError(errMsg);
     } finally {
       setGeneratingReport(false);
@@ -1598,7 +1593,7 @@ export default function App() {
                                   onClick={handleDownloadPDF}
                                   sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 600 }}
                                 >
-                                  Download PDF
+                                  Download
                                 </Button>
                               </Box>
 
@@ -1608,7 +1603,7 @@ export default function App() {
                                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                     <SuccessIcon color="success" fontSize="small" />
                                     <Typography variant="body2" sx={{ color: "#166534", fontWeight: 700, fontSize: "0.82rem" }}>
-                                      PDF Report saved to Cloudinary & Database!
+                                      Clinical Report (PNG) saved to Cloudinary & Database!
                                     </Typography>
                                   </Box>
                                   <Button
@@ -1619,7 +1614,7 @@ export default function App() {
                                     startIcon={<DownloadIcon fontSize="small" />}
                                     sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 700, fontSize: "0.78rem", py: 0.3 }}
                                   >
-                                    Download PDF Report
+                                    Download 
                                   </Button>
                                 </Box>
                               )}
@@ -2034,7 +2029,7 @@ export default function App() {
                                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                   <SuccessIcon color="success" fontSize="small" />
                                   <Typography variant="body2" sx={{ color: "#166534", fontWeight: 700, fontSize: "0.82rem" }}>
-                                    PDF Report saved to Cloudinary & Database!
+                                    Clinical Report (PNG) saved to Cloudinary & Database!
                                   </Typography>
                                 </Box>
                                 <Button
@@ -2045,7 +2040,7 @@ export default function App() {
                                   startIcon={<DownloadIcon fontSize="small" />}
                                   sx={{ borderRadius: "8px", textTransform: "none", fontWeight: 700, fontSize: "0.78rem", py: 0.3 }}
                                 >
-                                  Download PDF Report
+                                  Download
                                 </Button>
                               </Box>
                             )}
@@ -2300,7 +2295,7 @@ export default function App() {
                             <TableCell sx={{ fontWeight: 700, color: "#0f172a" }}>Probability</TableCell>
                             <TableCell sx={{ fontWeight: 700, color: "#0f172a" }}>Age / Sex</TableCell>
                             <TableCell sx={{ fontWeight: 700, color: "#0f172a" }}>BP / Chol</TableCell>
-                            <TableCell sx={{ fontWeight: 700, color: "#0f172a" }}>PDF Report</TableCell>
+                            <TableCell sx={{ fontWeight: 700, color: "#0f172a" }}>Report (PNG)</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
@@ -2351,7 +2346,7 @@ export default function App() {
                                         "&:hover": { bgcolor: "#dbeafe" }
                                       }}
                                     >
-                                      Download PDF
+                                      Download
                                     </Button>
                                   ) : (
                                     <Typography variant="caption" sx={{ color: "#94a3b8" }}>—</Typography>
