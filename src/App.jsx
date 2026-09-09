@@ -818,7 +818,7 @@ export default function App() {
               <Typography variant="h6" sx={{ fontWeight: 800, color: "#ffffff", fontSize: "1.15rem", lineHeight: 1.2 }}>
                 CardioMind AI
               </Typography>
-              <Typography variant="caption" sx={{ color: "#64748b", fontSize: "0.72rem", fontWeight: 500 }}>
+              <Typography variant="caption" sx={{ color: "#fff", fontSize: "0.72rem", fontWeight: 500 }}>
                 Smarter Insights, Healthier Hearts.
               </Typography>
             </Box>

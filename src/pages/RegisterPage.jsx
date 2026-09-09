@@ -111,7 +111,7 @@ export default function RegisterPage({ onLoginSuccess }) {
           <Box
             sx={{
               flex: { xs: "1", md: "1" },
-              bgcolor: "#09101f",
+              bgcolor: "#0088ff",
               p: { xs: 4, md: 6 },
               display: "flex",
               flexDirection: "column",
@@ -143,7 +143,7 @@ export default function RegisterPage({ onLoginSuccess }) {
                   <Typography variant="h5" sx={{ fontWeight: 800, color: "#ffffff", fontSize: "1.35rem", lineHeight: 1.1 }}>
                     CardioMind AI
                   </Typography>
-                  <Typography variant="caption" sx={{ color: "#94a3b8", fontSize: "0.78rem", fontWeight: 500 }}>
+                  <Typography variant="caption" sx={{ color: "#fff", fontSize: "0.78rem", fontWeight: 500 }}>
                     Smarter Insights, Healthier Hearts.
                   </Typography>
                 </Box>
@@ -152,7 +152,7 @@ export default function RegisterPage({ onLoginSuccess }) {
               <Typography variant="h4" sx={{ fontWeight: 800, color: "#f8fafc", mb: 2, fontSize: { xs: "1.6rem", md: "2rem" }, lineHeight: 1.25 }}>
                 Join CardioMind Medical AI Network
               </Typography>
-              <Typography variant="body2" sx={{ color: "#94a3b8", fontSize: "0.95rem", lineHeight: 1.6, mb: 4 }}>
+              <Typography variant="body2" sx={{ color: "#fff", fontSize: "0.95rem", lineHeight: 1.6, mb: 4 }}>
                 Create your account to unlock continuous heart risk assessment, automated patient reports, and clinical AI chat assistant.
               </Typography>
 

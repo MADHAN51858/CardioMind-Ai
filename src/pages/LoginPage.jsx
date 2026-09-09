@@ -138,7 +138,7 @@ export default function LoginPage({ onLoginSuccess }) {
                   <Typography variant="h5" sx={{ fontWeight: 800, color: "#ffffff", fontSize: "1.35rem", lineHeight: 1.1 }}>
                     CardioMind AI
                   </Typography>
-                  <Typography variant="caption" sx={{ color: "#94a3b8", fontSize: "0.78rem", fontWeight: 500 }}>
+                  <Typography variant="caption" sx={{ color: "#fff", fontSize: "0.78rem", fontWeight: 500 }}>
                     Smarter Insights, Healthier Hearts.
                   </Typography>
                 </Box>
@@ -147,7 +147,7 @@ export default function LoginPage({ onLoginSuccess }) {
               <Typography variant="h4" sx={{ fontWeight: 800, color: "#f8fafc", mb: 2, fontSize: { xs: "1.6rem", md: "2rem" }, lineHeight: 1.25 }}>
                 Advanced Cardiovascular Risk Intelligence & Decision Support
               </Typography>
-              <Typography variant="body2" sx={{ color: "#94a3b8", fontSize: "0.95rem", lineHeight: 1.6, mb: 4 }}>
+              <Typography variant="body2" sx={{ color: "#fff", fontSize: "0.95rem", lineHeight: 1.6, mb: 4 }}>
                 Clinical-grade machine learning with Calibrated XGBoost, explainable SHAP reasoning, and grounded medical AI for physicians and patients.
               </Typography>
 
