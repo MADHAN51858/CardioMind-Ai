@@ -80,7 +80,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProfileModal from "./ProfileModal";
 import { downloadReportAsPNG, getReportPNGDataURL } from "./reportCanvas";
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
+import API_BASE from "./apiConfig";
 
 // Setup Axios Interceptor for auth
 axios.interceptors.request.use(config => {

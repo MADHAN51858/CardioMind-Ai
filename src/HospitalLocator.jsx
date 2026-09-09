@@ -37,7 +37,7 @@ import axios from "axios";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
+import API_BASE from "./apiConfig";
 
 // Custom Leaflet Icons using SVG DivIcons to ensure reliable rendering
 const createUserIcon = () =>

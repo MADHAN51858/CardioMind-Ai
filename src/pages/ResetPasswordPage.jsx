@@ -23,7 +23,7 @@ import {
   ArrowBack as ArrowBackIcon
 } from "@mui/icons-material";
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
+import API_BASE from "../apiConfig";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
