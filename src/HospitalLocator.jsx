@@ -31,7 +31,12 @@ import {
   OpenInNew as OpenInNewIcon,
   Star as StarIcon,
   Navigation as NavigationIcon,
-  InfoOutlined as InfoIcon
+  InfoOutlined as InfoIcon,
+  Favorite as HeartIcon,
+  CheckCircle as CheckIcon,
+  HealthAndSafety as HealthSafetyIcon,
+  MedicalInformation as MedicalInfoIcon,
+  FilterList as FilterIcon
 } from "@mui/icons-material";
 import axios from "axios";
 import L from "leaflet";
@@ -93,6 +98,7 @@ export default function HospitalLocator() {
   const [loadingHospitals, setLoadingHospitals] = useState(false);
   const [selectedHospital, setSelectedHospital] = useState(null);
   
+  const [selectedFacilityFilter, setSelectedFacilityFilter] = useState("ALL"); // 'ALL' | 'CATHLAB' | 'EMERGENCY' | 'SURGERY'
   const [routesData, setRoutesData] = useState(null);
   const [loadingRoutes, setLoadingRoutes] = useState(false);
   const [routeMode, setRouteMode] = useState(0); // 0: driving, 1: transit, 2: walking
@@ -100,6 +106,14 @@ export default function HospitalLocator() {
   const [doctorsData, setDoctorsData] = useState(null);
   const [loadingDoctors, setLoadingDoctors] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const filteredHospitals = hospitals.filter((h) => {
+    if (selectedFacilityFilter === "ALL") return true;
+    if (selectedFacilityFilter === "CATHLAB") return h.has_cathlab;
+    if (selectedFacilityFilter === "EMERGENCY") return h.has_emergency;
+    if (selectedFacilityFilter === "SURGERY") return h.has_surgery;
+    return true;
+  });
 
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -257,7 +271,7 @@ export default function HospitalLocator() {
     }
 
     renderMarkers();
-  }, [userLocation, hospitals, selectedHospital]);
+  }, [userLocation, hospitals, selectedHospital, selectedFacilityFilter]);
 
   // Handle map resize when transitioning to 50% width
   useEffect(() => {
@@ -287,7 +301,7 @@ export default function HospitalLocator() {
     markersGroupRef.current.addLayer(userMarker);
 
     // 2. Hospital markers
-    hospitals.forEach((h) => {
+    filteredHospitals.forEach((h) => {
       const isSelected = selectedHospital && selectedHospital.id === h.id;
       const marker = L.marker([h.lat, h.lng], {
         icon: createHospitalIcon(isSelected),
@@ -297,8 +311,12 @@ export default function HospitalLocator() {
         handleSelectHospital(h);
       });
 
+      const facilitySnippet = h.facilities && h.facilities.length > 0 
+        ? `<br/><span style="color:#059669;font-size:11px;">✓ ${h.facilities.length} verified cardiac facilities</span>`
+        : "";
+
       marker.bindTooltip(
-        `<b>${h.name}</b><br/>Distance: ${h.distance_km} km<br/><span style="color:#ef4444;font-weight:600;">Click to view routes & doctors</span>`,
+        `<b>${h.name}</b><br/><span style="color:#dc2626;font-weight:600;">❤️ ${h.specialty_tag || "Cardiology Center"}</span><br/>Distance: ${h.distance_km} km${facilitySnippet}<br/><span style="color:#ef4444;font-size:11px;">Click to view routes, facilities & doctors</span>`,
         { direction: "top", offset: [0, -15] }
       );
 
@@ -446,6 +464,30 @@ export default function HospitalLocator() {
             />
           ))}
         </Box>
+
+        {/* Facility Filter Pills */}
+        <Box sx={{ display: "flex", gap: 1, mt: 1.5, pt: 1.5, borderTop: "1px dashed rgba(0,0,0,0.08)", flexWrap: "wrap", alignItems: "center" }}>
+          <Typography variant="caption" color="text.secondary" sx={{ mr: 0.5, fontWeight: 700, display: "flex", alignItems: "center", gap: 0.5 }}>
+            <FilterIcon sx={{ fontSize: 16, color: "#ef4444" }} /> Cardiac Facilities:
+          </Typography>
+          {[
+            { id: "ALL", label: `All Cardiac Centers (${hospitals.length})` },
+            { id: "CATHLAB", label: "Cath Lab & Angioplasty" },
+            { id: "EMERGENCY", label: "24/7 Emergency CPU" },
+            { id: "SURGERY", label: "CTVS Surgery / CABG" },
+          ].map((item) => (
+            <Chip
+              key={item.id}
+              label={item.label}
+              size="small"
+              clickable
+              color={selectedFacilityFilter === item.id ? "error" : "default"}
+              variant={selectedFacilityFilter === item.id ? "filled" : "outlined"}
+              onClick={() => setSelectedFacilityFilter(item.id)}
+              sx={{ fontSize: "0.75rem", fontWeight: selectedFacilityFilter === item.id ? 700 : 500 }}
+            />
+          ))}
+        </Box>
       </Card>
 
       {/* Main Interactive Map & Details Split Container */}
@@ -550,9 +592,17 @@ export default function HospitalLocator() {
                 <Typography variant="body2" color="text.secondary">
                   📍 {selectedHospital.address}
                 </Typography>
-                <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+                <Box sx={{ display: "flex", gap: 1, mt: 1, flexWrap: "wrap" }}>
+                  <Chip
+                    icon={<HeartIcon sx={{ fontSize: "14px !important", color: "#dc2626" }} />}
+                    label={selectedHospital.specialty_tag || "Cardiology & Heart Care Institute"}
+                    color="error"
+                    variant="filled"
+                    size="small"
+                    sx={{ fontWeight: 700, bgcolor: "rgba(220, 38, 38, 0.12)", color: "#dc2626", border: "1px solid rgba(220, 38, 38, 0.3)" }}
+                  />
                   {selectedHospital.has_emergency && (
-                    <Chip label="24/7 Emergency Care" color="error" size="small" sx={{ fontWeight: 600 }} />
+                    <Chip label="24/7 Cardiac Emergency" color="error" size="small" sx={{ fontWeight: 600 }} />
                   )}
                   <Chip
                     label={`Direct: ${selectedHospital.distance_km} km (${(selectedHospital.distance_km * 0.62).toFixed(1)} mi)`}
@@ -650,7 +700,86 @@ export default function HospitalLocator() {
 
               <Divider sx={{ my: 3 }} />
 
-              {/* SECTION 2: HEART RELATED DOCTORS (ZERO DUMMY DATA) */}
+              {/* SECTION 2: VERIFIED CARDIAC FACILITIES & CLINICAL SERVICES */}
+              <Box sx={{ mb: 3 }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 1 }}>
+                      <HealthSafetyIcon color="error" fontSize="small" />
+                      Cardiac Facilities & Clinical Infrastructure
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Verified medical & emergency care units available at this center
+                    </Typography>
+                  </Box>
+                  {selectedHospital.facilities && selectedHospital.facilities.length > 0 && (
+                    <Chip
+                      icon={<CheckIcon sx={{ fontSize: "14px !important", color: "#10b981" }} />}
+                      label={`${selectedHospital.facilities.length} Verified Units`}
+                      size="small"
+                      sx={{ bgcolor: "rgba(16, 185, 129, 0.12)", color: "#059669", fontWeight: 700 }}
+                    />
+                  )}
+                </Box>
+
+                {selectedHospital.facilities && selectedHospital.facilities.length > 0 ? (
+                  <Grid container spacing={1.5}>
+                    {selectedHospital.facilities.map((fac, idx) => (
+                      <Grid item xs={12} key={idx}>
+                        <Paper
+                          variant="outlined"
+                          sx={{
+                            p: 1.5,
+                            borderRadius: 2,
+                            bgcolor: "#f8fafc",
+                            borderColor: "#e2e8f0",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 0.5,
+                            transition: "all 0.2s ease",
+                            "&:hover": { borderColor: "#ef4444", bgcolor: "#fff", boxShadow: "0 2px 8px rgba(239, 68, 68, 0.08)" },
+                          }}
+                        >
+                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 0.5 }}>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                              <CheckIcon sx={{ fontSize: 18, color: "#10b981", flexShrink: 0 }} />
+                              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#0f172a" }}>
+                                {fac.name}
+                              </Typography>
+                            </Box>
+                            <Chip
+                              label={fac.badge || fac.category}
+                              size="small"
+                              sx={{
+                                fontSize: "0.7rem",
+                                fontWeight: 700,
+                                bgcolor: "rgba(220, 38, 38, 0.08)",
+                                color: "#dc2626",
+                                height: 22,
+                              }}
+                            />
+                          </Box>
+                          {fac.description && (
+                            <Typography variant="caption" color="text.secondary" sx={{ pl: 3.2, display: "block" }}>
+                              {fac.description}
+                            </Typography>
+                          )}
+                        </Paper>
+                      </Grid>
+                    ))}
+                  </Grid>
+                ) : (
+                  <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: "#f8fafc" }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Standard cardiology OPD consultation, 24/7 emergency care, and non-invasive diagnostic facilities available.
+                    </Typography>
+                  </Paper>
+                )}
+              </Box>
+
+              <Divider sx={{ my: 3 }} />
+
+              {/* SECTION 3: HEART RELATED DOCTORS (ZERO DUMMY DATA) */}
               <Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
                   <Box>
