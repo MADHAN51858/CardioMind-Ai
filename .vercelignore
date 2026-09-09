@@ -1,0 +1,16 @@
+# Ignore Python backend, ML artifacts, and data from Vercel frontend builds
+# (The FastAPI backend runs on Railway)
+server/
+tests/
+data/
+knowledge/
+reports/
+requirements.txt
+pyproject.toml
+uv.lock
+.python-version
+Procfile
+railway.json
+pyrightconfig.json
+.pytest_cache/
+.venv/

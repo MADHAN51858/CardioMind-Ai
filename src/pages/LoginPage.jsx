@@ -97,8 +97,7 @@ export default function LoginPage({ onLoginSuccess }) {
             flexDirection: { xs: "column", md: "row" },
             borderRadius: "24px",
             overflow: "hidden",
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
+          
             bgcolor: "#ffffff"
           }}
         >
@@ -106,7 +105,7 @@ export default function LoginPage({ onLoginSuccess }) {
           <Box
             sx={{
               flex: { xs: "1", md: "1.1" },
-              bgcolor: "#09101f",
+              bgcolor: "#0088ff",
               p: { xs: 4, md: 6 },
               display: "flex",
               flexDirection: "column",
